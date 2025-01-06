@@ -1,0 +1,29 @@
+title: Harry Singh
+author: Harry Singh
+avatar_url: https://media.licdn.com/dms/image/v2/D4D03AQHe_iXrJTexYg/profile-displayphoto-shrink_800_800/B4DZWz07euHAAc-/0/1742478753075?e=1752105600&v=beta&t=eydBt60jUrsjlqhdUHIosLyw1QjWYmjio7bKRh1H4zs
+email: hardev0a0@gmail.com
+description: >-
+  I am a lead software developer.
+baseurl: ""
+url: "https://harrysingh.xyz"
+github_username: badass-commits
+linkedin_username: hardev-singh-805397277
+show_excerpts: true
+permalink: pretty
+exclude: ['README.md']
+
+header_pages:
+  - about.md
+  - resume.html
+
+projects:
+  - threat-locator
+  - med-map
+  - car-inventory
+
+# Build settings
+theme: minima
+plugins:
+  - jekyll-feed
+  - jekyll-github-metadata
+  - jekyll-octicons
