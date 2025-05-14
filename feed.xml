@@ -1,0 +1,353 @@
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.10.0">Jekyll</generator><link href="https://harrysingh.xyz/feed.xml" rel="self" type="application/atom+xml" /><link href="https://harrysingh.xyz/" rel="alternate" type="text/html" /><updated>2025-05-14T07:38:55-05:00</updated><id>https://harrysingh.xyz/feed.xml</id><title type="html">Harry Singh</title><subtitle>Lead Software Engineer at Nomad Health</subtitle><author><name>Harry Singh</name></author><entry><title type="html">Leading with Purpose: Principles That Shape Success</title><link href="https://harrysingh.xyz/2024/09/10/leading-with-purpose/" rel="alternate" type="text/html" title="Leading with Purpose: Principles That Shape Success" /><published>2024-09-10T14:56:42-05:00</published><updated>2024-09-10T14:56:42-05:00</updated><id>https://harrysingh.xyz/2024/09/10/leading-with-purpose</id><content type="html" xml:base="https://harrysingh.xyz/2024/09/10/leading-with-purpose/"><![CDATA[<p>I’ve been searching for the right topic for my next blog post, which would offer relevance and valuable insights. As my role has evolved in recent months, I’ve gained a deeper understanding of leadership and what it truly means to be a leader. While I’ve held various leadership positions in the past, it’s only now, with the opportunity to reflect, that I’ve crystallized my beliefs about what constitutes strong leadership traits. Working at Nomad has exposed me to exceptional technical and people leaders whose collaboration has helped shape my leadership principles. This blog post aims to share these principles and provide my perspective on their significance.</p>
+
+<p>Before we begin, it’s essential to acknowledge that leadership takes various forms, and the principles I present may not be universally applicable. My objective is not to impose my views on others but to share what leadership means.</p>
+<h2 id="introduction">Introduction:</h2>
+<p>Leadership goes beyond a mere title or position; it embodies a mindset and a set of principles that guide individuals to unlock their potential and that of others. Whether leading a small team or an entire organization, understanding and embodying practical leadership principles can make all the difference in achieving professional and personal success.</p>
+
+<p>In this blog post, I will explore the six leadership principles I hold myself accountable for. My aim with these principles is to cultivate a positive and productive work environment that lays a solid foundation for driving teams towards shared goals.</p>
+<h3 id="lead-by-example">Lead by Example:</h3>
+<p>As a leader, actions speak louder than words. Leading by example entails embodying the behaviours and values you expect from others. Whether demonstrating integrity, embracing a strong work ethic, or fostering a culture of continuous learning, your actions set the standard for others to follow.</p>
+<h3 id="communicate-effectively">Communicate Effectively:</h3>
+<p>Clear, open, and transparent communication forms the backbone of effective leadership. It involves listening, providing feedback, and ensuring everyone is aligned on goals and expectations. Effective communication builds trust, resolves conflicts, and strengthens collaboration within the team. Whether the message is positive or negative, clarity in communication fosters a shared understanding.</p>
+<h3 id="empower-and-delegate">Empower and Delegate:</h3>
+<p>A remarkable leader recognizes the strengths and potential of their team members and empowers them to take ownership and make decisions. Delegating tasks and responsibilities lightens the load and allows your team to grow and develop their skills. Trusting your team and granting autonomy instil confidence and a sense of ownership.</p>
+<h3 id="inspire-and-motivate">Inspire and Motivate:</h3>
+<p>A leader manages tasks, but, more importantly, inspires and motivates their team members. Be a source of inspiration by setting a compelling vision, articulating goals, and sharing the bigger picture. Recognize and celebrate achievements, creating a positive and supportive atmosphere where individuals feel motivated to give their best.</p>
+<h3 id="humans-not-robots">Humans, not robots</h3>
+<p>A great leader acknowledges and appreciates each team member’s unique qualities and needs. Treating people as individuals rather than mere cogs in a machine demonstrates empathy, fosters a positive work environment, and builds strong relationships.</p>
+<h3 id="stay-relatable">Stay relatable</h3>
+<p>Staying relatable as a leader means remaining open to questions and maintaining credibility in your expertise. While it may not always be necessary, I have personally recognized and valued the importance of this approach, especially when working as an individual contributor within a team.</p>
+<h2 id="conclusion">Conclusion:</h2>
+<p>I’ve learned that leadership is an ongoing journey that I have not mastered and may never (will likely never :) ) fully conquer. Each leader holds their own perspective on which behaviours are important to them. By sharing my leadership principles, I hope to spark insightful discussions and encourage fellow leaders to reflect on their guiding principles. Together, we can continue to grow and refine our leadership approaches, driving positive impact and empowering those around us.</p>]]></content><author><name>Harry Singh</name></author><summary type="html"><![CDATA[I’ve been searching for the right topic for my next blog post, which would offer relevance and valuable insights. As my role has evolved in recent months, I’ve gained a deeper understanding of leadership and what it truly means to be a leader. While I’ve held various leadership positions in the past, it’s only now, with the opportunity to reflect, that I’ve crystallized my beliefs about what constitutes strong leadership traits. Working at Nomad has exposed me to exceptional technical and people leaders whose collaboration has helped shape my leadership principles. This blog post aims to share these principles and provide my perspective on their significance.]]></summary></entry><entry><title type="html">What’s in the .git folder</title><link href="https://harrysingh.xyz/2023/05/21/looking-into-git-folder/" rel="alternate" type="text/html" title="What’s in the .git folder" /><published>2023-05-21T14:56:42-05:00</published><updated>2023-05-21T14:56:42-05:00</updated><id>https://harrysingh.xyz/2023/05/21/looking-into-git-folder</id><content type="html" xml:base="https://harrysingh.xyz/2023/05/21/looking-into-git-folder/"><![CDATA[<p>Each of the dozens of git repos on your machine contains a .git folder. But you may have never thought about the details of its contents. You know that somehow the folder holds the history of every version of every file ever committed to the repository. You just don’t know how.</p>
+
+<p>The contents are less mysterious than you think. For obvious reasons, git optimizes the contents of the .git folder for size and speed. So you can’t browse into it and see your files. The object files are all named after their guid, and the data is <a href="https://zlib.net/">zlib</a> compressed. But the structure and organization is documented and understandable.</p>
+
+<p><img src="/assets/images/posts/git.png" alt="git" /></p>
+
+<p>I’m not going to go into a full explanation of the files here. Others, like Rob Richardson (<a href="https://robrich.org/">blog</a>, <a href="https://twitter.com/rob_rich">twitter</a>) have explained it better than I ever will. It was Rob’s talk at CodeMash that helped me understand how the contents of the .git folder worked. I just created a graphic from the info he shared. Additional details are available at <a href="https://gitready.com/advanced/2009/03/23/whats-inside-your-git-directory.html">GitReady.com</a>.</p>
+
+<p>I’ll simply summarize by saying that the files can be grouped into five categories:</p>
+
+<ol>
+  <li><strong>Objects</strong> - (blue)These represent the files and changes. Objects can be further divided into commits, trees, and blobs.</li>
+  <li><strong>Refs</strong> - (red)These are human-readable files that organize the objects</li>
+  <li><strong>Logs</strong> - (green)These are used to quickly generate logs displayed to the user.</li>
+  <li><strong>Config</strong> - (light gray)There are files used to config git’s behavior</li>
+  <li><strong>Temp</strong> - (gray)These are temporary files for information that git needs to hold between command-line actions.</li>
+</ol>]]></content><author><name>Harry Singh</name></author><summary type="html"><![CDATA[Each of the dozens of git repos on your machine contains a .git folder. But you may have never thought about the details of its contents. You know that somehow the folder holds the history of every version of every file ever committed to the repository. You just don’t know how.]]></summary></entry><entry><title type="html">Scripting the dotnet CLI for Rapid Test Setup</title><link href="https://harrysingh.xyz/2022/08/15/test-solution-with-dotnet-cli/" rel="alternate" type="text/html" title="Scripting the dotnet CLI for Rapid Test Setup" /><published>2022-08-15T14:56:42-05:00</published><updated>2022-08-15T14:56:42-05:00</updated><id>https://harrysingh.xyz/2022/08/15/test-solution-with-dotnet-cli</id><content type="html" xml:base="https://harrysingh.xyz/2022/08/15/test-solution-with-dotnet-cli/"><![CDATA[<p>From time to time, I need to create a small C# or F# solution to experiment with a code feature or a library function. Often, what I want to do is create a simple console application and a unit test project that references the console application. This isn’t hard to do in Visual Studio, but it feels like it takes too many steps.</p>
+
+<p>Recently, I read a fantastic new book called Essential F#, by Ian Russel. (You can get <a href="https://leanpub.com/essential-fsharp">it here</a>) In it, he showed that you could quickly create the setup I described above with the dotnet CLI. It was an idea so brilliantly simple that I’m jealous that I didn’t think of it. But I did take it a step further and created a bat file to further automate the process.</p>
+
+<p>The commands in this script are taken directly from the book. The only modification I’ve made is to parameterize the solution name and the project name.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>dotnet new sln -o %1
+cd %1
+mkdir src
+dotnet new console -lang F# -o src/%2
+dotnet sln add src/%2/%2.fsproj
+mkdir tests
+dotnet new xunit -lang F# -o tests/%2Tests
+dotnet sln add tests/%2Tests/%2Tests.fsproj
+cd tests/%2Tests
+dotnet add reference ../../src/%2/%2.fsproj
+dotnet add package FsUnit
+dotnet add package FsUnit.XUnit
+dotnet build
+dotnet test
+</code></pre></div></div>
+
+<p>With this script, you could execute something like this command:</p>
+
+<p><code class="language-plaintext highlighter-rouge">CreateFSharpProject SampleSolution SampleProject</code></p>
+
+<p>This would create a new Solution named SampleSolution. It would contain two projects F#, SampleProject and SampleProjectTests. The test project already has a reference to the primary project and is ready to execute the tests with FsUnit.</p>
+
+<p>I created a similar script file for C# and MSTest.</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>dotnet new sln -o %1
+cd %1
+mkdir src
+dotnet new console -lang C# -o src/%2
+dotnet sln add src/%2/%2.csproj
+mkdir tests
+dotnet new mstest -lang C# -o tests/%2Tests
+dotnet sln add tests/%2Tests/%2Tests.csproj
+cd tests/%2Tests
+dotnet add reference ../../src/%2/%2.csproj
+dotnet build
+dotnet test
+</code></pre></div></div>
+<p>With these scripts, you can quickly create solutions with the unit test project already configured. That way, you can jump right into the code experiment you want to run.</p>
+
+<p>You can take this concept and modify it to create whatever kind of project and unit test project you want. Hopefully, it is a simple little time saver for you.</p>]]></content><author><name>Harry Singh</name></author><summary type="html"><![CDATA[From time to time, I need to create a small C# or F# solution to experiment with a code feature or a library function. Often, what I want to do is create a simple console application and a unit test project that references the console application. This isn’t hard to do in Visual Studio, but it feels like it takes too many steps.]]></summary></entry><entry><title type="html">Rethinking Developer Experience in a Changing Tech Landscape</title><link href="https://harrysingh.xyz/2022/06/02/developer-experience/" rel="alternate" type="text/html" title="Rethinking Developer Experience in a Changing Tech Landscape" /><published>2022-06-02T14:56:42-05:00</published><updated>2022-06-02T14:56:42-05:00</updated><id>https://harrysingh.xyz/2022/06/02/developer-experience</id><content type="html" xml:base="https://harrysingh.xyz/2022/06/02/developer-experience/"><![CDATA[<p>Over the past five years, I have had the pleasure of working within different developer communities within various organizations. These experiences are where I captured my passion for developer experience and Dev(Sec)Ops. Making life as easy as possible for developers and ensuring the right tools are in place is essential to improve developer retention and business outcomes. Nowadays, this is even more imperative because the role of a developer is no longer just software development; it’s starting to become key within every area of the SDLC.</p>
+
+<h2 id="the-evolution-of-a-developer--">The evolution of a developer … :</h2>
+<p>What do I mean by this? Let’s quickly discuss the evolution.</p>
+
+<p>Traditionally, a business analyst would hand a requirement over to a developer. That developer would then carry out the software development of that requirement. The developer would then hand it over to a tester to write unit tests, regression tests, etc. You would repeat that process until all requirements are completed. Then, a security engineer would run a security test, and they would attempt to understand which are false positives and need to be fixed. Once all vulnerabilities are solved, quality would come in and work with the business/technical analyst to ensure all documentation are complete. Then, you can release!</p>
+
+<p>What’s a theme you are seeing out of this way of working? It’s very waterfall, messy and there are so many opportunities that can slow the release.</p>
+
+<p>Now, a more modern approach could be:</p>
+
+<p>A scrum master works with a developer to draft user stories that meet the requirement. The developer would carry out the actual software development. Once complete, they would then write unit tests (maybe even UI tests if it’s a GUI and some regression tests). Alongside testing, the developer gets SCA and SAST reports of any vulnerabilities, fixing them during development if any arise. Additionally, the developer is updating design documentation, README’s, CHANGELOG’s, etc. During this process, the security engineer, quality consultant, business/systems analyst is ensuring its meeting requirements (DevSecOps), meaning just before release, there are no problems, and you can release straight away!</p>
+
+<p>So, what’s the main difference you see between the two? Straight away, you see the developer (or developers) are carrying out a lot more of the tasks within the SLDC lifecycle. This doesn’t mean the other roles aren’t involved or important; it just means there is a shift in perspective from who is primarily doing the work. You may still have testers for large applications, but the developer developing the feature/bug request is writing the initial tests. Similarly, you may (and should) have a dedicated security engineer on hand to assist with vulnerabilities that the developer needs advice about. Still, the developer is going in and remediating the vulnerabilities. These two examples highlight the shift left in nature (nothing new) in how development is done.</p>
+
+<p>Why? Why is this evolving in this way? Let’s discuss:</p>
+<ul>
+  <li>The most important one is, the developer knows the codebase the best. I’ll give two examples of why this is critical:
+    <ul>
+      <li>Let’s say you have a centralized testing team that provides unit/regression/UI testing capabilities. The developer does the work; they hand off to a tester to write the test(s). There is a one-two day SLA for that testing to be picked up. Then the tester has to get up to speed with the feature/bug that has been written/fixed. The SLA largely depends on the size of the change but can take anywhere from an hour to a day. The actual development of the tests likely take the same amount of time, so no added time there. The work then gets PR’d, which needs another review by the developer who wrote the code to ensure it meets the requirement of the bug/feature. Again, adding to the total SLA. In comparison, if the developer who wrote the code write the tests as well, there is 0 SLA in the handover between the testers, 0 SLA in getting up to speed with the codebase and 0 SLA in the review, as the tests can go into the main PR into the dev/qa/main branch. Think about this at scale; there is SO much time saving, which equates to quicker value for the business. Another example, security. Traditionally, a security person would look through a report and say, “Hey, you need to fix all critical and high vulnerabilities”. The developer would pivot the conversation to fixing the vulnerabilities that had the highest risk on the most critical part of the codebase. However, the conversation would typically end in all critical and high vulnerabilities needing remediating, if not all of them. Although controversial, this is highly inefficient and generally wastes a considerable amount of time. Why? Just because a vulnerability is flagged as critical, it doesn’t mean it’s critical to your application. On the other hand, you may have a medium severity that directly affects the most important aspect of your application, with the highest surface area. This is why the developer who wrote the code takes accountability for reviewing and remediating the vulnerabilities of most criticality to the application, not based on the potential effect. This leads to quicker release cycles and more secure software as developers fix vulnerabilities that count early!</li>
+    </ul>
+  </li>
+  <li>The second reason developers are becoming more involved is due to more and more aspects of the SLDC … well … they are becoming code. Think about traditional development; you would build software and hand it off to an infrastructure person to deploy it. Nowadays, the developer is that infrastructure person. The developer writes the code for the feature but then writes the code for the IaC, which supports that feature. You are also seeing CI/CD becoming more config as code. Like the feature example above, the developer writes the feature, then the IaC, and any additions to the CI/CD landscape. More and more aspects of development are becoming code, which requires a developer.</li>
+</ul>
+
+<p>So, the above talks about the evolution of a developer, which paints a picture of why developer experience is so important. If the developer is doing more, you naturally would like to maximize velocity to get the best value. However, most importantly, you want to maximize how happy they are. A happy developer = better retention + productivity. I truly believe the more emphasis you put on developer experience, the more you will get back. So, what can do you do to improve the developer experience? Below, I will discuss my three core principles when it comes to developer experience.</p>
+
+<h3 id="developer-first-toolset">Developer First Toolset</h3>
+<p>Stand up tooling that has developer-first principles. When you put more on developers and follow a DevSecOps approach, it’s critical to stand up tooling within the toolchain that focuses on developers.</p>
+
+<p>More and more tools are starting to put developers at the heart of what they do, which paves the way for increased productivity and experience (we have discussed why this is important above). Some great examples of tooling which should be developer-first are:</p>
+
+<ul>
+  <li>Security</li>
+  <li>CI</li>
+  <li>CD</li>
+  <li>Quality</li>
+  <li>Testing</li>
+</ul>
+
+<p>You wouldn’t hand a scientist equipment that didn’t make it easier for the scientist to use? You wouldn’t have a medic devices that were hard to use and make their life hard? So why would you hand developers tooling that doesn’t make the life of a developer easy?</p>
+
+<p>If you’re a company looking to change the tooling to be more developer-focused, ensure you have developer(s) involved in the decision making.</p>
+
+<h3 id="frictionless-processes">Frictionless Processes</h3>
+<p>Focus on the process, not just the tools. Having the right tools are essential, but if you make them hard to use or implement them in a way that introduces friction, you won’t be getting the most out of the tools. What can you do to ensure you have good foundations?</p>
+<ul>
+  <li><strong>Automate:</strong> Try not to put any manual requests or SLA’s on setup. Use the API’s, Webhooks, etc., provided by tools to get set up in an automated fashion.</li>
+  <li><strong>Provide suitable levels of access:</strong> Try not to limit access to tools, especially for the reason of just in case. Provide people with the autonomy to read, write and administer their solutions. There are times where you have to limit access, especially in large enterprises, but do so for the right reasons, not just for the sake of not knowing.</li>
+  <li><strong>Open API’s:</strong> The most frustrating thing for a developer is when they are restricted on the art of the possible because API’s are disabled due to the team managing the tooling worrying about what teams may do, which they don’t know about. As above, there may be good reasons (security, etc.), but unless something is blocking you, open API’s and empower teams to be creative.</li>
+</ul>
+
+<p>These are just a few examples. The main point to get across is automation. Automation is a great way to unblock friction. It is especially important regarding the DevOps Toolchain. Ensure that it’s easy to get data between tool A and tool B. Automation and interconnectivity are essential to success, whether that’s a testing tool to a project management tool or a security tool to a CI tool. Ensure you think about your process, not just the tools.</p>
+
+<h3 id="empowerment--trust">Empowerment &amp; Trust</h3>
+<p>The last one focused on empowerment and trust. This behaviour generally gets overlooked, as it’s easier to focus on the tools because you can measure and quantity success easier. However, there are simple steps you can make to help drive a more open culture among developers:</p>
+
+<ul>
+  <li>Don’t push back on developers for the sake of wanting to share an opinion. I have seen many scenarios where a developer shares a great thought but gets questioned or disputed by someone who doesn’t know the area but wants to share a thought to make sure they are in the conversation. Everyone should share ideas, collaborate, and be open, but ensure developers voices are heard and listened to. This is a simple behaviour you can adopt but will make a huge difference.</li>
+  <li>I mentioned this above in the process section, but nowadays (especially in larger enterprises), access is restricted, API’s are disabled (and I know what you’re thinking, but what about security? It would be best to never compromise on security, but think about what automated processes you can use to keep to a high standard of security but still enabling access and API’s). E.g. key rotation, automatic access reviews, etc. The more you give to a developer, the more they will feel empowered and trusted, which will boost morale.</li>
+</ul>
+
+<p>Focus on your people, and have trust in your developers.</p>]]></content><author><name>Harry Singh</name></author><summary type="html"><![CDATA[Over the past five years, I have had the pleasure of working within different developer communities within various organizations. These experiences are where I captured my passion for developer experience and Dev(Sec)Ops. Making life as easy as possible for developers and ensuring the right tools are in place is essential to improve developer retention and business outcomes. Nowadays, this is even more imperative because the role of a developer is no longer just software development; it’s starting to become key within every area of the SDLC.]]></summary></entry><entry><title type="html">Orchestrating Multi-Lambda Workflows in Serverless Architectures</title><link href="https://harrysingh.xyz/2022/03/05/aws-step-functions/" rel="alternate" type="text/html" title="Orchestrating Multi-Lambda Workflows in Serverless Architectures" /><published>2022-03-05T11:48:42-06:00</published><updated>2022-03-05T11:48:42-06:00</updated><id>https://harrysingh.xyz/2022/03/05/aws-step-functions</id><content type="html" xml:base="https://harrysingh.xyz/2022/03/05/aws-step-functions/"><![CDATA[<p>The more I have been working on AWS, the more I understanding the importance of well-architected solutions. Today, I would like to focus on the value of <a href="https://aws.amazon.com/step-functions/?step-functions.sort-by=item.additionalFields.postDateTime&amp;step-functions.sort-order=desc">AWS Step Functions</a>. What are Step Functions? The offical description is:</p>
+
+<p><em>AWS Step Functions is a low-code visual workflow service used to orchestrate AWS services, automate business processes, and build serverless applications. Workflows manage failures, retries, parallelization, service integrations, and observability so developers can focus on higher-value business logic.</em></p>
+
+<p>Before we build out some architectures, let’s set some principles:</p>
+
+<ul>
+  <li><strong>Purposeful:</strong> Single function lambda’s for single-use cases. (not combining multiple businesslogic into a single lambda). This is to promote reuse.</li>
+  <li><strong>Event Driven:</strong> No polling or waiting on a cron which triggers to see if things have changed. I would like an end-to-end event driven architecture.</li>
+  <li><strong>Stateful:</strong> Non-Invoke Based (Callback hell). E.G Lambda A Invoked Lambda B from within Lambda A and waits for Lambda B to be done to return success/fail</li>
+</ul>
+
+<p>Now, as with any architecture, there are multiple ways to build out this example system. I will show two examples below and compare &amp; contrast the pros and cons of each, mainly focusing on how to use multiple lambdas together and why AWS Step Functions are beneficial.</p>
+
+<h2 id="model-one---sqs">Model One - SQS:</h2>
+
+<p><img src="/assets/images/posts/sqs.png" alt="SQS Diagram" /></p>
+
+<p>Let’s walk through the above diagram. We have a GitHub App configured on two events (A, B). We use a GitHub App to remove the “human” element of the connection, along with some other goodies like an increase in API Requests. The GitHub App will send a payload to our API, but before it reached the API, we use AWS Route 53 for our custom DNS record, which then will proxy down to our AWS Cloudfront Distribution.</p>
+
+<p>Once the payload reaches the API, we will first use the direct integration between AWS HTTP API Gateways and AWS Lambda to first process the data. Then, to communicate between the rest of the lambdas, we use AWS SQS to traffic data between lambdas for processing. Finally, data ends up in the database where you could use a service like AWS AppSync or another API Gateway to fetch the data.</p>
+
+<p>Let’s talk about the pros:</p>
+
+<ul>
+  <li><strong>Extensible:</strong> It’s extensible, as an individual SQS Queue fronts each function. Meaning, you’re able to quickly send data to that function from any service that can send structured data. You may know about Lambda X needing to send data to Lambda Y. Still when a new Lambda comes in, Lambda Z, it’s easy to add that lambda into the current architecture and send data to Lambda Y without breaking the current pattern.</li>
+</ul>
+
+<p>Let’s talk about the cons:</p>
+
+<ul>
+  <li><strong>Clean Arch:</strong> It’s a little messy. I am a big believer that most clean architectures are simple. Don’t overcomplicate something and add AWS services because it could fit a need. Look at alternatives to reduce your footprint. There are 6 SQS Queues; they seem to be the most predominant service in this design. Are they needed?</li>
+  <li><strong>Problem Finding:</strong> How easy is it to really find problems? We have a dead letter queue configured so any messages that don’t complete can be re-processed accordingly, but you only see a problem at a time; you don’t see the history of where that data has come from or where it has been or how it has been processed. You would have to write some custom code to do this.</li>
+  <li><strong>App Tracking:</strong> Amazon SQS requires you to implement application-level tracking, especially if your application uses multiple queues, which in this case, it does.</li>
+</ul>
+
+<p>Overall, this isn’t a bad architecture, it fits a use case, but could it be fine-tuned?</p>
+
+<h2 id="model-two---step-functions">Model Two - Step Functions</h2>
+
+<p><img src="/assets/images/posts/sf.png" alt="Step Functions" /></p>
+
+<p>Both ingress patterns into AWS are the same. The main difference starts when you get past the AWS HTTP API Gateway and into the data processing.</p>
+
+<p>As this solution has multiple lambdas, we use AWS Step Functions to coordinate how they interact. So, when a payload reaches the HTTP API, we trigger the AWS Step function. Data is processed by each lambda and sent back to the state machine, where finally it inserts data into the DB and uses a custom AWS SNS Topic to send an email on success/error.</p>
+
+<p>Both have similar architectures but differ slightly in data communication; let’s discuss the detail …</p>
+
+<p>Let’s talk about the pros:</p>
+
+<ul>
+  <li><strong>Less Code:</strong> We don’t have to write a custom lambda to enter data into the DB. Step functions have a native integration with DynamoDB, meaning we don’t have to write code to do something preexisting. More information on integrations can be found here: <a href="https://docs.aws.amazon.com/step-functions/latest/dg/concepts-service-integrations.html">Using AWS Step Functions with other services</a>.</li>
+  <li><strong>Less AWS Resource(s):</strong> No need for any queues. We use the state machine to send data to the following lambda in the chain. More information on how to send data within step functions can be found here: <a href="https://docs.aws.amazon.com/step-functions/latest/dg/concepts-state-machine-data.html">State Machine Data</a></li>
+  <li><strong>Process Overview:</strong> Easy to see the whole process in action. Step Functions easy allow you to see the data that is processing. To see more information on seeing the overall process, check out this link: <a href="https://docs.aws.amazon.com/step-functions/latest/dg/concepts-state-machine-data.html">Input and Output Processing in Step Functions</a></li>
+  <li><strong>Easy to find problems:</strong> Don’t you dislike having to crawl through cloudwatch events to find errors logged out from a lambdas console? Using AWS Step Functions allows you to quickly find errors via the Step Functions GUI as you can crawl through the state machines events to find problems. I find this link really useful for more information on debugging: <a href="https://docs.aws.amazon.com/step-functions/latest/dg/monitoring-logging.html">Monitoring &amp; Logging</a></li>
+  <li><strong>Built in retries:</strong> Sometimes lambdas error and writes into DynamoDB’s fail. Although they are rare, if not handled correctly, they could cause downstream dilemmas. Step Functions have inbuilt retry capabilities that allow you to retry on specific errors. Meaning you can only retry on specific event errors that you would like to retry on. More information on this can be found here: <a href="https://aws.amazon.com/blogs/developer/handling-errors-retries-and-adding-alerting-to-step-function-state-machine-executions/">Monitoring &amp; Logging</a></li>
+</ul>
+
+<p>Let’s talk about the cons:</p>
+
+<ul>
+  <li><strong>Con One:</strong> Step Functions has some pretty strict and small <a href="https://docs.aws.amazon.com/step-functions/latest/dg/limits-overview.html">limits</a> (I actually think this article is a nice summary of the limits: Think Twice Before Using Step Functions — Check the AWS Serverless Service Quotas). If you are processing lots of data, you would need to split your step functions into multiple state machines. One idea on how to architect your solution around this limit is to create a parent/child sate machine. E.G, a child state machine could process a single data entry at a time, which invokes from a parent state machine that loops through the data, but doesn’t directly do any of the processing, so it stays within limits.</li>
+  <li><strong>Con Two:</strong> If another system needs to reuse a specific function, there is no queue in front of it, making it harder to call. Making the architecture not amazingly extensible. Yes, you can still use AWS SQS with step functions, but unless you think it’s needed externally to this use case, it likely isn’t required.</li>
+</ul>
+
+<p>Overall, I genuinely believe this architecture is cleaner and runs a more robust process than the previous design.</p>
+
+<h2 id="going-into-detail-about-step-functions">Going into detail about Step Functions</h2>
+
+<p>I would like to focus on two core parts of step functions that stand out to me:</p>
+
+<h3 id="feature-one-built-in-looping-through-arrays">Feature One: Built in looping through arrays</h3>
+<p>Let’s say you have a data set of 1,000 users. You could send all 1,000 users to the lambda via an SQS Queue (but you can only send ten records at a time, remember), loop through all users, process them accordingly and send them back to the state machine. Or, you could use the inbuilt map feature within Step Functions that will map through the user’s array at the sate machine level and send one user record at a time to the lambda for processing. Why would you do this? It allows you to write less code within your lambda, fewer loops, hopefully, quicker processing. In my opinion, it also makes your code cleaner.</p>
+
+<p>It looks a little like this within the state machine definition file:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Invoke Worker State Machine:
+Type: Map
+InputPath: "$.users"
+MaxConcurrency: 50
+Parameters:
+    UserDetails.$: "$$.Map.Item.Value"
+</code></pre></div></div>
+
+<h3 id="feature-two-aws-step-functions-can-call-aws-step-functions">Feature Two: AWS Step Functions can call AWS Step Functions</h3>
+<p>As mentioned above, AWS Step Functions have some pretty strict (and small) limits. Meaning you have to architect your solutions correctly. An elegant aspect of Step Functions is they can call other <a href="https://docs.aws.amazon.com/step-functions/latest/dg/sample-start-workflow.html">step functions</a>. Meaning if you have been processing lots of data and are reaching limits, you can split up your Step Function into one parent step function, and then a child step function where you send one data record at a time to be processed individually from the parent.</p>
+
+<p>It looks a little like this within the state machine definition file:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Iterator:
+StartAt: Invoke Worker State Machine Task
+States:
+    Invoke Worker State Machine Task:
+    Type: Task
+    Resource: arn:aws:states:::states:startExecution.sync:2
+    Parameters:
+        StateMachineArn: "${ChildStateMachineArn}"
+        Input:
+        UserDetails.$: "$.UserDetails"
+        AWS_STEP_FUNCTIONS_STARTED_BY_EXECUTION_ID.$: "$$.Ex.Id"
+</code></pre></div></div>
+<p>Taking the above two code snippets, you are looping through the user’s array of objects and sending one user at a time. Let’s say you have 1,000 users; you are spinning up 1,000 child step functions and processing one user at a time.</p>
+
+<p>These are just two features that I think make Step Functions a great resource to use when co-ordinating a multi-lambda solution. However, there are so many more, check out the docs <a href="https://docs.aws.amazon.com/step-functions/latest/dg/welcome.html">here</a> for more information.</p>
+
+<h2 id="conclusion">Conclusion</h2>
+<p>I have found Step Functions to be a great resource when working across lambdas. They give you more confidence in your design and allow you to write less code, and in most cases, less code is better code, right?</p>]]></content><author><name>Harry Singh</name></author><summary type="html"><![CDATA[The more I have been working on AWS, the more I understanding the importance of well-architected solutions. Today, I would like to focus on the value of AWS Step Functions. What are Step Functions? The offical description is:]]></summary></entry><entry><title type="html">DevOps Toolchain Models: Centralised vs. Decentralised</title><link href="https://harrysingh.xyz/2021/10/21/devops-toolchain-models/" rel="alternate" type="text/html" title="DevOps Toolchain Models: Centralised vs. Decentralised" /><published>2021-10-21T11:56:42-05:00</published><updated>2021-10-21T11:56:42-05:00</updated><id>https://harrysingh.xyz/2021/10/21/devops-toolchain-models</id><content type="html" xml:base="https://harrysingh.xyz/2021/10/21/devops-toolchain-models/"><![CDATA[<p>To centralise or decentralise, that’s the question. When enterprises adopt DevOps, one of the most important considerations is how internal teams consume a toolchain supporting the DevOps mindset.</p>
+
+<p>In this article, I want to focus on the big question around how DevOps should (or could) be delivered within an enterprise. Should companies enable complete freedom and decentralisation of their toolchain and process? This lets teams put their own flavour on the core principles of DevOps. Or, do companies go for a more centralised route? This means more standardisation &amp; consistency across the enterprise and an easier adoption avenue due to central capabilities. Let’s discuss the pros and cons of each and come up with a recommendation.</p>
+
+<h2 id="what-does-centralisation-mean">What does centralisation mean?</h2>
+
+<p>Centralisation of DevOps tooling means offering a single toolchain and process for teams to follow across an enterprise. When you centralise, you provide multiple teams with a single avenue to adopt a DevOps mindset. There are many advantages to centralisation, some examples being:</p>
+<ul>
+  <li><strong>Adoption:</strong> Whenever you centralise, you usually have a higher adoption percentage off the bat. This is mainly due to teams who are new to DevOps, more specifically, the tools that come as part of the DevOps toolchain, have a place to start and consume something as a Service. If you rely on teams standing up their own tooling, the time to adoption is generally longer as there is more setup time.</li>
+  <li><strong>Consistency:</strong> If you centralise a process, an expected outcome of that is consistency. This means that if a developer is working on team X, and then moves to team Y; there is less “getting up to speed” time, as the processes would be the same for Team X and Team Y. This is a massive win if your company promotes rotation of developers and engineers across teams.</li>
+  <li><strong>Time to Value:</strong> Application teams new to DevOps will find it quicker and easier to deploy something to production if you centralise. Teams spread across an enterprise can always ask questions to the central team owning DevOps, so someone is around to help out and ask questions. There is short term success here and a quicker time to value.</li>
+</ul>
+
+<p>As you can tell, there is a theme to the above. The newer your enterprise is to DevOps, the more value you will see from centralisation. However, there are some disadvantages or considerations to keep in mind.</p>
+
+<ul>
+  <li><strong>Slow turnaround of Change:</strong> If only one team are allowed to own and maintain tools, and a customer puts in a feature request, that request may be one request often already in the backlog. As that customer who logged that bug, you may have to wait a month, even longer to see that feature request in production. Whereas if you had control of the tools in your application DevOps toolchain, you make the decisions, so the power is in your hands.</li>
+  <li><strong>Reliance &amp; Excuses:</strong> If you centralise, it is easy for application teams to rely heavily on the team’s who own the central tools. Especially if there is something the application team is waiting on. There is an excuse to why they are behind or not moving at the pace they should be, “I can’t do this, just waiting for the central team to deliver something”. Too much reliance on one team means you don’t move at the pace that you may want to move at.</li>
+</ul>
+
+<p>There are lots of advantages to centralisation, especially for larger &amp; legacy enterprises. Now let us discuss what decentralisation means.</p>
+
+<h2 id="what-does-decentralisation-mean">What does decentralisation mean?</h2>
+<p>Decentralisation of DevOps tooling is the opposite of centralisation. It’s where there is not central tooling, there is no central process, and you allow your enterprise to embrace the principles of DevOps themselves. There is a trust that they will see the value in DevOps, and have the creative and learning agile mindset to read, up-skill and apply. Some advantages of decentralisation are:</p>
+
+<ul>
+  <li><strong>Embracing Diverse DevOps Models:</strong> There isn’t one way to adopt DevOps, and there most certainly isn’t one way to use a DevOps Toolchain. If you centralise too much, you will find people “doing the same thing” and not getting the most out of the tools that they are using.</li>
+  <li><strong>Learning Agility:</strong> The value of decentralisation is that you are equipping your enterprise for learning success. Change has been, and always will be happening, especially within IT. If you fully decentralise, you are asking and almost enforcing your enterprise to upskill themselves. What this leads to is a longer-term success. If employees are used to changing and are used to learning new tools &amp; processes, anything new that comes up in the future should require less time to adopt as employees are used to a changing environment.</li>
+  <li><strong>Innovation:</strong> This is a pivotal point to understand. You want your employees to be innovative and apply learnings to their working model. For some reason, there is a preconception that the centralised team knows best and what they say should go. This is not always the case. Just because the central team think they know what’s right for the enterprise, doesn’t mean they do. If you decentralise your DevOps process and toolchain, you are letting your employees innovate and think differently without the central team’s restrictions. A different way of thinking about this is - would you rather a central team of 40 people making decisions, or would you like 1000 people (or everyone in your company) learning and deciding what’s best. One thousand minds are better than 40.</li>
+</ul>
+
+<p>However, for all these advantages, there are possible disadvantages to think about:</p>
+
+<ul>
+  <li><strong>Can be slow to get enterprise-wide adoption:</strong> Normally, leadership within an enterprise want quick results and want to see success straight away. If you have a highly skilled and learning agile company, this may not be so much of a problem. But companies who have been around a while may struggle with getting results quickly.</li>
+  <li><strong>You may not see shared learnings:</strong> There is a reality to decentralisation: some teams will get it quicker than others. As there is no central team, there may not be an easy way to share learnings across teams. This will lead to some teams racing ahead of others, with the high likelihood some teams will never get it and will be left behind. At the end of the day you are one company, so the success shouldn’t be perceived as team success, it should be company success.</li>
+</ul>
+
+<p>Similar to the centralisation section, there is a theme appearing. A newer company or a company with a highly agile culture is likely going to suit decentralisation more. I believe following this model will set yourself up for success longer-term; when done right.</p>
+
+<h2 id="so-what-one-should-we-pick">So, what one should we pick?</h2>
+
+<p>The reality of this question is that there is no right answer. But there is a recommendation:
+<strong>Centralise the DevOps Toolchain’s foundations, whilst decentralising the journey on “how” teams adopt &amp; consume the centralised tools, patterns, and processes.</strong></p>
+
+<p>So, what does this mean? Let’s break down that sentence into two:</p>
+
+<p><strong>“Centralise the DevOps Toolchain’s foundations”.</strong></p>
+
+<p>It isn’t time effective, or cost-effective to have multiple of the same tools, or similar tools spread across an enterprise. An example being source code management. Stand up a single source code management tool and offer it out to the enterprise as a Service. This will reduce operational overhead because instead of multiple teams managing that tool; it will be supported and maintained centrally. Additionally, it’s typically cheaper contractually if multiple licences are purchased centrally vs distributed across numerous contracts. For centralisation to be a success, automation and end-user autonomy needs to be a core principle. Staying with the source code management example mentioned above, you should allow customers to create repositories themselves without putting a request in and waiting. Allow teams to create teams themselves, as well as administer their own repository. Ensure there is no friction in the way of the customer of the tool. The more “red tape” and “friction” in the way of the customer and the centralised tool, the less chance of success. If you’re thinking, “I can’t give administration access and full autonomy in my company, we have quality process and regulations we need to meet.” Just because you give autonomy and allow self-service, doesn’t mean you can’t wrap process and rigour around the tool, ensuring quality and security compliance. Use API’s to build the needed quality processes to ensure the centralised tool is “in compliance” of any in-company procedures. Then publish documentation of any processes, so customers know what to expect. Mimic this for every tool within your toolchain.</p>
+
+<p>Additionally, understand that you will have different teams at different skill levels, so centralising foundational blueprints and patterns for teams to get started with makes sense. For example, within GitHub, create <a href="https://docs.github.com/en/github/creating-cloning-and-archiving-repositories/creating-a-template-repository">repository templates</a> which follow best practice (locked branches, pull requests enforced, turned on security tools). This means teams new to GitHub have a place to start “out of the box” with everything needed pre-created. The same goes for your CI/CD tool. Build reusable workflows/pipelines with standard testing &amp; deployment patterns across your enterprise. For example, you may be a predominately JavaScript shop, so building a single pipeline that does JavaScript testing/linting/security means teams new to CI/CD have a place to start (additionally teams with CI/CD experience may not want to build their own so will reuse what is on offer centrally). Thirdly, and finally, is the hosting platform chosen (AWS, Azure, GCP). Build central patterns for common software application architectures. e.g. if many of your software products built are web assets, creating a SPA template that comes with the needed infrastructure as code to deploy to AWS S3 &amp; Cloud-front. This means teams have a place to start, especially people new to cloud-native. The same for API’s would apply, an OpenAPI template that comes with AWS API Gateway &amp; Lambda would be a great starter kit.</p>
+
+<p>Okay, so now you may be thinking wow this is a lot of centralisation, let’s shift to the second part of the above phrase which is:</p>
+
+<p><strong>“Whilst decentralising the journey on “how” teams adopt &amp; consume the centralised tools, patterns, and processes.”</strong></p>
+
+<p>You are not the police. You cannot dictate and enforce how teams use your tools. If you lock everything down to a single way of doing things, you will slow down teams. This will fail. Your company may have adopted a “DevOps Toolchain”, but your teams won’t be moving fast and won’t be adopting the principles of DevOps. Past standing up the tools and foundational patterns/starter kits, let teams decide how they want to use the tools you have stood up.</p>
+
+<p>An example being your hosting platform. Stand up an underlying hosting service that meets the needed quality &amp; security processes for the enterprise, but then get out the application teams way. Do not centralise manual gates and reviews to one team as that team “they know best”.</p>
+
+<p>Doing this will massively slow down not just deployment time, but learning time. Give autonomy for teams to deploy from Dev -&gt; Q.A. -&gt; Prod. If teams fail, that’s okay, let them learn from that failure and apply that learning for next time.</p>
+
+<p>The same goes for CI/CD. In the above paragraph, I explained building example pipelines/workflows. Do not dictate this is the only way for teams to use CI/CD. Allow teams to see these as examples, and then customise to suit their needs. Teams may not even use these pre-built pipelines/workflows, and that’s okay. They are there for reference and use if desired.</p>
+
+<p>The main point to be conveyed here is that there is no one way of doing things. Do not centralise the process, just the foundations and tools. Doing this will set teams up for success by themselves. Additionally, the more centralisation you do and the more is done for teams, the less they will learn themselves. This puts enterprises at a further disadvantage because if centralised tools change, or there is an update in a procedure that requires a change on the application team, teams will be foreign to doing things themselves, leading to slower change adoption.</p>
+
+<h2 id="conclusion">Conclusion</h2>
+<p>There is a misconception that DevOps should be a specific role, and only people who’s job title includes “DevOps” needs to focus on DevOps. In my opinion, this isn’t, and shouldn’t be the case. DevOps is a mindset (process) which teams need to adopt when building and deploying software products. Everyone part of that software team somewhat contributes to the DevOps process. As mentioned above, there is no right answer when it comes to centralisation or decentralisation, it depends on the company and most importantly, the people. In most enterprises, a mixture, or somewhere in-between centralisation/decentralisation, will give the best experience for different teams. To conclude, centralisation will get you quicker success but can be short term thinking. Decentralisation will take longer to get there but in the long term can see more significant benefits.</p>
+
+<p>The key takeaway though is centralisation works, but only when done at the correct level, and autonomy is vital.</p>]]></content><author><name>Harry Singh</name></author><summary type="html"><![CDATA[To centralise or decentralise, that’s the question. When enterprises adopt DevOps, one of the most important considerations is how internal teams consume a toolchain supporting the DevOps mindset.]]></summary></entry><entry><title type="html">How I Stay Up-to-Date</title><link href="https://harrysingh.xyz/2021/05/10/staying-up-to-date/" rel="alternate" type="text/html" title="How I Stay Up-to-Date" /><published>2021-05-10T11:56:42-05:00</published><updated>2021-05-10T11:56:42-05:00</updated><id>https://harrysingh.xyz/2021/05/10/staying-up-to-date</id><content type="html" xml:base="https://harrysingh.xyz/2021/05/10/staying-up-to-date/"><![CDATA[<p>Software engineering as a discipline is a lot more amorphous than other engineering disciplines. Being an effective software engineer requires having a solid foundation in computer science and engineering principles, plus the ability to stay up-to-date on the state of the art. Here are some ways I stay relevant and up-to-date.</p>
+
+<h3 id="podcasts">Podcasts</h3>
+
+<p>Since starting my first internship in May 2015, I realized that I needed to use my new daily commute productively and to start gearing up my vocabulary and knowledge of professional software development. I created a station with some of these podcasts and started working through the backlog dating back to 2004! I’ve added some of these podcasts to the station later on and still enjoy it today.</p>
+
+<ul>
+  <li><a href="https://www.se-radio.net">Software Engineering Radio</a></li>
+  <li><a href="https://softwareengineeringdaily.com">Software Engineering Daily</a></li>
+  <li><a href="https://www.codingblocks.net">Coding Blocks</a></li>
+  <li><a href="https://www.programmingthrowdown.com">Programming Throwdown</a></li>
+  <li><a href="https://soundcloud.com/lambda-cast">LambdaCast</a></li>
+  <li><a href="https://lispcast.com/category/podcast/">Thoughts on Functional Programming</a></li>
+  <li><a href="http://thesparkgap.net">The Spark Gap</a></li>
+</ul>
+
+<h3 id="blogs-and-articles">Blogs and Articles</h3>
+
+<p>A classic source of information is <a href="https://news.ycombinator.com">HackerNews</a>, but there are a multitude of great blogs to follow out there. Reading blogs and articles at breakfast or over lunch is a great way to stay up-to-date. I also extensively use the reading list in Safari to save things for later. I’m planning on building a page on my website to graph the topics I read about in a knowledge map or word cloud.</p>
+
+<h3 id="reddit">Reddit</h3>
+
+<p>On Reddit, I follow multiple software, computer science, and tech subreddits such as,</p>
+
+<ul>
+  <li>c_language, C_Programming</li>
+  <li>python</li>
+  <li>cellular_automata, genetic_algorithms, proceduralgeneration, processing</li>
+  <li>compsci, computerscience</li>
+  <li>Cplusplus, cpp</li>
+  <li>cscareerquestions, softwaredevelopment</li>
+  <li>embedded, raspberry_pi</li>
+  <li>javascript, typescript</li>
+  <li>programming, coding, programmingtools,</li>
+  <li>Python</li>
+</ul>]]></content><author><name>Harry Singh</name></author><summary type="html"><![CDATA[Software engineering as a discipline is a lot more amorphous than other engineering disciplines. Being an effective software engineer requires having a solid foundation in computer science and engineering principles, plus the ability to stay up-to-date on the state of the art. Here are some ways I stay relevant and up-to-date.]]></summary></entry><entry><title type="html">My First Post!</title><link href="https://harrysingh.xyz/2021/04/26/my-first-post/" rel="alternate" type="text/html" title="My First Post!" /><published>2021-04-26T14:56:42-05:00</published><updated>2021-04-26T14:56:42-05:00</updated><id>https://harrysingh.xyz/2021/04/26/my-first-post</id><content type="html" xml:base="https://harrysingh.xyz/2021/04/26/my-first-post/"><![CDATA[<p>I’ve been meaning to redo my personal website and personal-website for a long time. I previously had a fork of <a target="_blank" href="https://github.com/github/personal-website" rel="noopener noreferrer"><svg class="svg-icon v-align-middle" style="fill:#586069"><use xlink:href="/assets/minima-social-icons.svg#github"></use></svg>github/personal-website</a>
+ that was pretty basic. I wanted to be able to have more flexibility in showing GitHub projects as cards and also showing a blog post about that project. I’ve also been wanting to have a better way to show off my <a href="/about/">story</a> so having tabs dedicated to them was another requirement. I’m going to try my hand at crafting some blog posts if I can come up with some interesting topics. We’ll see how it goes!</p>]]></content><author><name>Harry Singh</name></author><summary type="html"><![CDATA[I’ve been meaning to redo my personal website and personal-website for a long time. I previously had a fork of github/personal-website that was pretty basic. I wanted to be able to have more flexibility in showing GitHub projects as cards and also showing a blog post about that project. I’ve also been wanting to have a better way to show off my story so having tabs dedicated to them was another requirement. I’m going to try my hand at crafting some blog posts if I can come up with some interesting topics. We’ll see how it goes!]]></summary></entry></feed>
