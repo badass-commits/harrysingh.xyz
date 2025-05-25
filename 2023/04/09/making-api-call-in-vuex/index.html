@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1"><!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>How to make API Calls with Vuex | Harry Singh</title>
+<meta name="generator" content="Jekyll v3.10.0" />
+<meta property="og:title" content="How to make API Calls with Vuex" />
+<meta name="author" content="Harry Singh" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="Today I’ll explain how to make API calls with Vuex. While Vuex does a great job of keeping your data synchronized across the frontend of your application, you’ll need to talk with a database at some point to make sure that any changes will be persisted permanently. Fortunately, Vue makes it very easy for us to work with an API, especially when we use Vue-resource. While Vue-resource is no longer part of the official Vue ecosystem, I think it is still an easy way to get up and going with APIs. But regardless of the API wrapper you choose to use, the concepts I describe here will still be applicable to your app." />
+<meta property="og:description" content="Today I’ll explain how to make API calls with Vuex. While Vuex does a great job of keeping your data synchronized across the frontend of your application, you’ll need to talk with a database at some point to make sure that any changes will be persisted permanently. Fortunately, Vue makes it very easy for us to work with an API, especially when we use Vue-resource. While Vue-resource is no longer part of the official Vue ecosystem, I think it is still an easy way to get up and going with APIs. But regardless of the API wrapper you choose to use, the concepts I describe here will still be applicable to your app." />
+<link rel="canonical" href="https://harrysingh.xyz/2023/04/09/making-api-call-in-vuex/" />
+<meta property="og:url" content="https://harrysingh.xyz/2023/04/09/making-api-call-in-vuex/" />
+<meta property="og:site_name" content="Harry Singh" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2023-04-09T15:00:00-05:00" />
+<meta name="twitter:card" content="summary" />
+<meta property="twitter:title" content="How to make API Calls with Vuex" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Harry Singh"},"dateModified":"2023-04-09T15:00:00-05:00","datePublished":"2023-04-09T15:00:00-05:00","description":"Today I’ll explain how to make API calls with Vuex. While Vuex does a great job of keeping your data synchronized across the frontend of your application, you’ll need to talk with a database at some point to make sure that any changes will be persisted permanently. Fortunately, Vue makes it very easy for us to work with an API, especially when we use Vue-resource. While Vue-resource is no longer part of the official Vue ecosystem, I think it is still an easy way to get up and going with APIs. But regardless of the API wrapper you choose to use, the concepts I describe here will still be applicable to your app.","headline":"How to make API Calls with Vuex","mainEntityOfPage":{"@type":"WebPage","@id":"https://harrysingh.xyz/2023/04/09/making-api-call-in-vuex/"},"url":"https://harrysingh.xyz/2023/04/09/making-api-call-in-vuex/"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/assets/main.css"><link type="application/atom+xml" rel="alternate" href="https://harrysingh.xyz/feed.xml" title="Harry Singh" /></head>
+<body><header class="site-header" role="banner">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/">Harry Singh</a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger"><a class="page-link" href="/about/">About</a></div>
+      </nav></div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title p-name" itemprop="name headline">How to make API Calls with Vuex</h1>
+    <p class="post-meta">
+      <time class="dt-published" datetime="2023-04-09T15:00:00-05:00" itemprop="datePublished">Apr 9, 2023
+      </time></p>
+  </header>
+
+  <div class="post-content e-content" itemprop="articleBody">
+    <p>Today I’ll explain how to make API calls with Vuex. While Vuex does a great job of keeping your data synchronized across the frontend of your application, you’ll need to talk with a database at some point to make sure that any changes will be persisted permanently. Fortunately, Vue makes it very easy for us to work with an API, especially when we use Vue-resource. While Vue-resource is <a href="https://medium.com/the-vue-point/retiring-vue-resource-871a82880af4#.xs5m1t7e6">no longer part of the official Vue ecosystem</a>, I think it is still an easy way to get up and going with APIs. But regardless of the API wrapper you choose to use, the concepts I describe here will still be applicable to your app.</p>
+
+<h2 id="the-big-picture">The Big Picture</h2>
+<p>As we know from the <a href="https://vuex.vuejs.org/en">Vuex docs</a>, Vuex works like this:</p>
+
+<p><img src="/assets/images/posts/api-call-vuex-1.png" alt="api-call-vuex-1" /></p>
+
+<p>Right away, we can see that the Vuex team has already told us to interact with a backend API via Actions. This is because Actions can be asynchronous, while Mutations must be synchronous. In this structure, it makes sense that Actions should be the place for API calls because they can wait for the data before committing to a Mutation. While this may seem a tad confusing conceptually, the big takeaway is to remember to only handle API calls in your Actions.</p>
+
+<h2 id="api-setup">API Setup</h2>
+<p>Before we begin, I’d like to say thank you to <a href="https://github.com/vuejs/vuex/issues/85">jonagoldman</a> on GitHub for outlining this setup. Now, let’s jump into the code and see how to set up API calls in our Actions. As usual, I’ll be working with a Laravel Spark project, but feel free to set up your directories as you see fit.</p>
+
+<p><img src="/assets/images/posts/api-call-vuex-2.png" alt="api-call-vuex-2" /></p>
+
+<p>As you can see above, I have a <code class="language-plaintext highlighter-rouge">vuex</code> directory with two sub-directories for <code class="language-plaintext highlighter-rouge">modules</code> and <code class="language-plaintext highlighter-rouge">utils</code> as well as my top-level <code class="language-plaintext highlighter-rouge">store.js</code>. Inside of the <code class="language-plaintext highlighter-rouge">utils</code> directory, there is a file called <code class="language-plaintext highlighter-rouge">api.js</code>. This is a little helper file where I’ve wrapped some <code class="language-plaintext highlighter-rouge">vue-resource</code> calls within HTTP actions.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>//resources/assets/js/vuex/utils/api.js
+
+import Vue from 'vue'
+
+export default {
+    get(url, request) {
+        return Vue.http.get(url, request)
+            .then((response) =&gt; Promise.resolve(response.body.data))
+            .catch((error) =&gt; Promise.reject(error));
+    },
+    post(url, request) {
+        return Vue.http.post(url, request)
+            .then((response) =&gt; Promise.resolve(response))
+            .catch((error) =&gt; Promise.reject(error));
+    },
+    patch(url, request) {
+        return Vue.http.patch(url, request)
+            .then((response) =&gt; Promise.resolve(response))
+            .catch((error) =&gt; Promise.reject(error));
+    },
+    delete(url, request) {
+        return Vue.http.delete(url, request)
+            .then((response) =&gt; Promise.resolve(response))
+            .catch((error) =&gt; Promise.reject(error));
+    }
+}
+</code></pre></div></div>
+
+<p>Now, within an <code class="language-plaintext highlighter-rouge">actions.js</code> file, you can import <code class="language-plaintext highlighter-rouge">api.js</code> and use <code class="language-plaintext highlighter-rouge">api.get(url, request)</code> to make a request. This isn’t a required step, but I find that it keeps my Actions more concise and readable. Plus, if I ever wanted to stop using <code class="language-plaintext highlighter-rouge">vue-resource</code>, I’d just need to edit this file and my Actions would be fine.</p>
+
+<p>With that out of the way, let’s hop into an <code class="language-plaintext highlighter-rouge">actions.js</code> file and see what your API calls can look like. Side note: your <code class="language-plaintext highlighter-rouge">actions.js</code> file can be for your Modules or for your top-level store, just remember to do your imports correctly.</p>
+
+<h2 id="api-in-actions">API in Actions</h2>
+<p>Here’s what a fully fleshed out <code class="language-plaintext highlighter-rouge">actions.js</code> might look like:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>import api from '../../utils/api.js'
+
+const actions = {
+    getIncrementers (context) =&gt; {
+        return api.get('/incrementers')
+            .then((response) =&gt; context.commit('GET_INCREMENTERS', response))
+            .catch((error) =&gt; context.commit('API_FAILURE', error));
+    },
+    createIncrementer (context, data) =&gt; {
+        return api.post(data.url, data.request)
+            .then((response) =&gt; context.commit('CREATE_INCREMENTER', response))
+            .catch((error) =&gt; context.commit('API_FAILURE', error));
+    },
+    updateIncrementer (context, data) =&gt; {
+        return api.patch(data.url, data.request)
+            .then((response) =&gt; context.commit('UPDATE_INCREMENTER', response))
+            .catch((error) =&gt; context.commit('API_FAILURE', error));
+    },
+    deleteIncrementer (context, url) =&gt; {
+        return api.delete(url)
+            .then((response) =&gt; context.commit('DELETE_INCREMENTER', response))
+            .catch((error) =&gt; context.commit('API_FAILURE', error));
+    }
+};
+
+export default actions
+</code></pre></div></div>
+<p>As you can see, we’ve used each of our HTTP actions from <code class="language-plaintext highlighter-rouge">api.js</code> - with some slight variations - to give you a complete picture of what you can do. Each of the variations are pretty self-explanatory, but let’s run through them. In the <code class="language-plaintext highlighter-rouge">getIncrementers</code> function, you can see that we’ve hard-coded in the url. Typically, I prefer to pass in my url when I map the Action to my component, so I can handle any dynamic urls. But if the url is as simple as <code class="language-plaintext highlighter-rouge">/incrementers</code>, then you can probably get away with leaving it hard-coded. Now if you look at the rest of the function, you can see that since <code class="language-plaintext highlighter-rouge">api.get()</code> returns a Promise we can then chain on our Mutation commits. So if the API call succeeds, I’m committing to the <code class="language-plaintext highlighter-rouge">GET_INCREMENTS</code> Mutation and passing along the API response as well. And if the API call fails, I’m performing a different commit to <code class="language-plaintext highlighter-rouge">API_FAILURE</code> with the error so I can let the user know that something went wrong.</p>
+
+<p>In the createIncrementer and updateIncrementer functions, we’re handling things slightly differently. Since we need to pass some data to the API, we’ve included a data Object in the Action. From the data Object I can then get the url and the request and pass it to the API. Lastly, in the deleteIncrementer function, you can see that we’re just passing in a url for the API to reference. This is how I typically handle the dynamic urls I was talking about earlier.</p>
+
+<h2 id="the-wrap-up">The Wrap Up</h2>
+<p>And there you have it! A quick look at how to get up and running with APIs and Vuex. With this in hand, and our articles on <a href="https://metricloop.com/blog/how-to-set-up-modules-in-vuex">Modules</a> and setting up <a href="https://metricloop.com/blog/how-to-use-vuex-in-a-laravel-spark-project">Vuex</a>, you should be well on your way to building some awesome apps with Vuex.</p>
+
+  </div><a class="u-url" href="/2023/04/09/making-api-call-in-vuex/" hidden></a>
+</article>
+
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/"></data>
+
+  <div class="wrapper">
+
+    <div class="footer-col-wrapper">
+
+      <div class="footer-col footer-col-2">
+        <img src="" style="max-width: 75px; border-radius: 100%">
+      </div>
+
+      <div class="footer-col footer-col-1"><ul class="social-media-list"><li><a href="mailto:hardev0a0@gmail.com"><span class="username">hardev0a0@gmail.com</span></a></li></ul>
+</div>
+
+      <div class="footer-col footer-col-3">
+        <p>Lead Software Engineer</p>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+</body>
+
+</html>

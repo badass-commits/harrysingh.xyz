@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1"><!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>CQRS with Laravel 11 | Harry Singh</title>
+<meta name="generator" content="Jekyll v3.10.0" />
+<meta property="og:title" content="CQRS with Laravel 11" />
+<meta name="author" content="Harry Singh" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="As business logic becomes more complex, services can become bloated, classes may do too much, and tests become hard to maintain. To address these issues, the author applied the CQRS (Command Query Responsibility Segregation) pattern in Laravel projects, leading to improved code clarity and maintainability." />
+<meta property="og:description" content="As business logic becomes more complex, services can become bloated, classes may do too much, and tests become hard to maintain. To address these issues, the author applied the CQRS (Command Query Responsibility Segregation) pattern in Laravel projects, leading to improved code clarity and maintainability." />
+<link rel="canonical" href="https://harrysingh.xyz/2025/04/28/cqrs-laravel-11/" />
+<meta property="og:url" content="https://harrysingh.xyz/2025/04/28/cqrs-laravel-11/" />
+<meta property="og:site_name" content="Harry Singh" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2025-04-28T15:00:00-05:00" />
+<meta name="twitter:card" content="summary" />
+<meta property="twitter:title" content="CQRS with Laravel 11" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Harry Singh"},"dateModified":"2025-04-28T15:00:00-05:00","datePublished":"2025-04-28T15:00:00-05:00","description":"As business logic becomes more complex, services can become bloated, classes may do too much, and tests become hard to maintain. To address these issues, the author applied the CQRS (Command Query Responsibility Segregation) pattern in Laravel projects, leading to improved code clarity and maintainability.","headline":"CQRS with Laravel 11","mainEntityOfPage":{"@type":"WebPage","@id":"https://harrysingh.xyz/2025/04/28/cqrs-laravel-11/"},"url":"https://harrysingh.xyz/2025/04/28/cqrs-laravel-11/"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/assets/main.css"><link type="application/atom+xml" rel="alternate" href="https://harrysingh.xyz/feed.xml" title="Harry Singh" /></head>
+<body><header class="site-header" role="banner">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/">Harry Singh</a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger"><a class="page-link" href="/about/">About</a></div>
+      </nav></div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title p-name" itemprop="name headline">CQRS with Laravel 11</h1>
+    <p class="post-meta">
+      <time class="dt-published" datetime="2025-04-28T15:00:00-05:00" itemprop="datePublished">Apr 28, 2025
+      </time></p>
+  </header>
+
+  <div class="post-content e-content" itemprop="articleBody">
+    <p>As business logic becomes more complex, services can become bloated, classes may do too much, and tests become hard to maintain. To address these issues, the author applied the CQRS (Command Query Responsibility Segregation) pattern in Laravel projects, leading to improved code clarity and maintainability.</p>
+
+<h2 id="what-is-cqrs">What is CQRS?</h2>
+
+<p>CQRS is an architectural pattern that separates commands (operations that change the system’s state) from queries (operations that read data). This separation:</p>
+
+<ul>
+  <li>Reflects business intent more clearly in code</li>
+  <li>Makes unit testing easier</li>
+  <li>Keeps classes small and focused</li>
+  <li>Can improve performance by optimizing read and write paths separately</li>
+</ul>
+
+<p>In practice, this involves creating separate classes for each action, typically organized under <code class="language-plaintext highlighter-rouge">Commands/</code> and <code class="language-plaintext highlighter-rouge">Queries/</code>, each with its own handler.</p>
+
+<h2 id="setting-up-cqrs-in-laravel">Setting up CQRS in Laravel</h2>
+
+<p>To maintain organization, commands and queries are placed under a <code class="language-plaintext highlighter-rouge">CQRS</code> folder:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>app/
+├── CQRS/
+│   ├── Commands/
+│   │   ├── GenerateMonthlyInvoiceCommand.php
+│   │   └── GenerateMonthlyInvoiceHandler.php
+│   └── Queries/
+│       ├── GetInvoiceBreakdownQuery.php
+│       └── GetInvoiceBreakdownHandler.php
+</code></pre></div></div>
+
+<p>This structure makes it easy to reason about the application’s use cases.</p>
+
+<h2 id="implementing-a-simple-command-bus">Implementing a Simple Command Bus</h2>
+
+<p>A command bus is used to automatically find the right handler for any command or query based on a naming convention (<code class="language-plaintext highlighter-rouge">Command</code> ➔ <code class="language-plaintext highlighter-rouge">CommandHandler</code>, <code class="language-plaintext highlighter-rouge">Query</code> ➔ <code class="language-plaintext highlighter-rouge">QueryHandler</code>). Here’s a simplified version:</p>
+
+<div class="language-php highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">namespace</span> <span class="nn">App\Services</span><span class="p">;</span>
+
+<span class="kn">use</span> <span class="nc">Illuminate\Pipeline\Pipeline</span><span class="p">;</span>
+
+<span class="kd">class</span> <span class="nc">CommandBus</span>
+<span class="p">{</span>
+    <span class="k">public</span> <span class="k">function</span> <span class="n">__construct</span><span class="p">(</span>
+        <span class="k">protected</span> <span class="kt">array</span> <span class="nv">$middlewares</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="p">)</span> <span class="p">{}</span>
+
+    <span class="k">public</span> <span class="k">function</span> <span class="n">dispatch</span><span class="p">(</span><span class="kt">object</span> <span class="nv">$command</span><span class="p">):</span> <span class="kt">mixed</span>
+    <span class="p">{</span>
+        <span class="nv">$handler</span> <span class="o">=</span> <span class="nv">$this</span><span class="o">-&gt;</span><span class="nf">resolveHandler</span><span class="p">(</span><span class="nv">$command</span><span class="p">);</span>
+
+        <span class="k">return</span> <span class="nf">app</span><span class="p">(</span><span class="nc">Pipeline</span><span class="o">::</span><span class="n">class</span><span class="p">)</span>
+            <span class="o">-&gt;</span><span class="nf">send</span><span class="p">(</span><span class="nv">$command</span><span class="p">)</span>
+            <span class="o">-&gt;</span><span class="nf">through</span><span class="p">(</span><span class="nv">$this</span><span class="o">-&gt;</span><span class="n">middlewares</span><span class="p">)</span>
+            <span class="o">-&gt;</span><span class="nf">then</span><span class="p">(</span><span class="k">fn</span> <span class="p">(</span><span class="nv">$command</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="nv">$handler</span><span class="o">-&gt;</span><span class="nf">handle</span><span class="p">(</span><span class="nv">$command</span><span class="p">));</span>
+    <span class="p">}</span>
+
+    <span class="k">protected</span> <span class="k">function</span> <span class="n">resolveHandler</span><span class="p">(</span><span class="kt">object</span> <span class="nv">$command</span><span class="p">):</span> <span class="kt">object</span>
+    <span class="p">{</span>
+        <span class="nv">$handlerClass</span> <span class="o">=</span> <span class="nb">get_class</span><span class="p">(</span><span class="nv">$command</span><span class="p">)</span> <span class="mf">.</span> <span class="s1">'Handler'</span><span class="p">;</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nb">class_exists</span><span class="p">(</span><span class="nv">$handlerClass</span><span class="p">))</span> <span class="p">{</span>
+            <span class="k">throw</span> <span class="k">new</span> <span class="err">\</span><span class="nf">RuntimeException</span><span class="p">(</span><span class="s2">"Handler [</span><span class="si">{</span><span class="nv">$handlerClass</span><span class="si">}</span><span class="s2">] not found for command "</span> <span class="mf">.</span> <span class="nb">get_class</span><span class="p">(</span><span class="nv">$command</span><span class="p">));</span>
+        <span class="p">}</span>
+
+        <span class="k">return</span> <span class="nf">app</span><span class="p">(</span><span class="nv">$handlerClass</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>Middlewares, such as logging or validation, can be added around the execution:</p>
+
+<div class="language-php highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">namespace</span> <span class="nn">App\Services\Middlewares</span><span class="p">;</span>
+
+<span class="kn">use</span> <span class="nc">Closure</span><span class="p">;</span>
+
+<span class="kd">class</span> <span class="nc">LogCommandExecution</span>
+<span class="p">{</span>
+    <span class="k">public</span> <span class="k">function</span> <span class="n">handle</span><span class="p">(</span><span class="kt">object</span> <span class="nv">$command</span><span class="p">,</span> <span class="kt">Closure</span> <span class="nv">$next</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="nf">logger</span><span class="p">()</span><span class="o">-&gt;</span><span class="nf">info</span><span class="p">(</span><span class="s1">'Executing command: '</span> <span class="mf">.</span> <span class="nb">get_class</span><span class="p">(</span><span class="nv">$command</span><span class="p">));</span>
+
+        <span class="k">return</span> <span class="nv">$next</span><span class="p">(</span><span class="nv">$command</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>Register the command bus in your service provider:</p>
+
+<div class="language-php highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">use</span> <span class="nc">App\Services\CommandBus</span><span class="p">;</span>
+
+<span class="k">public</span> <span class="k">function</span> <span class="n">register</span><span class="p">()</span>
+<span class="p">{</span>
+    <span class="nv">$this</span><span class="o">-&gt;</span><span class="n">app</span><span class="o">-&gt;</span><span class="nf">singleton</span><span class="p">(</span><span class="nc">CommandBus</span><span class="o">::</span><span class="n">class</span><span class="p">,</span> <span class="k">function</span> <span class="p">()</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="k">new</span> <span class="nc">CommandBus</span><span class="p">([</span>
+            <span class="err">\</span><span class="nc">App\Services\Middlewares\LogCommandExecution</span><span class="o">::</span><span class="n">class</span><span class="p">,</span>
+        <span class="p">]);</span>
+    <span class="p">});</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h2 id="common-structure">Common Structure</h2>
+
+<ul>
+  <li><strong>Writes:</strong>
+    <ul>
+      <li><code class="language-plaintext highlighter-rouge">Command</code>: Holds the input data</li>
+      <li><code class="language-plaintext highlighter-rouge">CommandHandler</code>: Contains the business logic</li>
+    </ul>
+  </li>
+  <li><strong>Reads:</strong>
+    <ul>
+      <li><code class="language-plaintext highlighter-rouge">Query</code>: Describes the data you want</li>
+      <li><code class="language-plaintext highlighter-rouge">QueryHandler</code>: Handles the logic and returns a DTO or array</li>
+    </ul>
+  </li>
+</ul>
+
+<h2 id="naming-commands-and-queries">Naming Commands and Queries</h2>
+
+<p>Class names should reflect business intent:</p>
+
+<ul>
+  <li>Prefer: <code class="language-plaintext highlighter-rouge">GenerateMonthlyInvoiceCommand</code>, <code class="language-plaintext highlighter-rouge">AssignRoleToUserCommand</code>, <code class="language-plaintext highlighter-rouge">GetInvoiceBreakdownQuery</code></li>
+  <li>Avoid: Generic names like <code class="language-plaintext highlighter-rouge">InvoiceService</code>, <code class="language-plaintext highlighter-rouge">Handler</code>, <code class="language-plaintext highlighter-rouge">DoStuff</code></li>
+</ul>
+
+<p>This approach makes it easier for non-technical stakeholders to understand what a command does.</p>
+
+<h2 id="when-to-use-cqrs">When to Use CQRS</h2>
+
+<p>CQRS is beneficial when:</p>
+
+<ul>
+  <li>You have rich business rules (state checks, validations, calculations)</li>
+  <li>You need to aggregate data before writing</li>
+  <li>You want to structure your code around business use cases</li>
+  <li>You’re building modular or DDD-style architectures</li>
+</ul>
+
+<p>For simple CRUD operations, CQRS might be overkill.</p>
+
+<h2 id="real-world-example-generating-a-monthly-invoice">Real-World Example: Generating a Monthly Invoice</h2>
+
+<h3 id="context">Context:</h3>
+
+<p>At the end of each month, the system must generate an invoice for a customer based on multiple data sources (subscriptions, one-time services, product usage). Before saving the invoice, it needs to:</p>
+
+<ul>
+  <li>Retrieve all usage records for the month</li>
+  <li>Calculate the subtotal, taxes, and possible discounts</li>
+  <li>Build invoice line items</li>
+  <li>Save everything to the database</li>
+</ul>
+
+<h3 id="command">Command:</h3>
+
+<div class="language-php highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">class</span> <span class="nc">GenerateMonthlyInvoiceCommand</span>
+<span class="p">{</span>
+    <span class="k">public</span> <span class="k">function</span> <span class="n">__construct</span><span class="p">(</span>
+        <span class="k">public</span> <span class="k">readonly</span> <span class="kt">int</span> <span class="nv">$customerId</span><span class="p">,</span>
+        <span class="k">public</span> <span class="k">readonly</span> <span class="kt">DateTimeInterface</span> <span class="nv">$month</span>
+    <span class="p">)</span> <span class="p">{}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="handler">Handler:</h3>
+
+<div class="language-php highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">class</span> <span class="nc">GenerateMonthlyInvoiceHandler</span>
+<span class="p">{</span>
+    <span class="k">public</span> <span class="k">function</span> <span class="n">__construct</span><span class="p">(</span>
+        <span class="k">private</span> <span class="kt">ConsumptionRepository</span> <span class="nv">$consumptions</span><span class="p">,</span>
+        <span class="k">private</span> <span class="kt">InvoiceRepository</span> <span class="nv">$invoices</span><span class="p">,</span>
+        <span class="k">private</span> <span class="kt">TaxService</span> <span class="nv">$taxService</span><span class="p">,</span>
+        <span class="k">private</span> <span class="kt">DiscountService</span> <span class="nv">$discountService</span><span class="p">,</span>
+    <span class="p">)</span> <span class="p">{}</span>
+
+    <span class="k">public</span> <span class="k">function</span> <span class="n">handle</span><span class="p">(</span><span class="kt">GenerateMonthlyInvoiceCommand</span> <span class="nv">$command</span><span class="p">):</span> <span class="kt">void</span>
+    <span class="p">{</span>
+        <span class="nv">$items</span> <span class="o">=</span> <span class="nv">$this</span><span class="o">-&gt;</span><span class="n">consumptions</span><span class="o">-&gt;</span><span class="nf">forCustomerAndMonth</span><span class="p">(</span><span class="nv">$command</span><span class="o">-&gt;</span><span class="n">customerId</span><span class="p">,</span> <span class="nv">$command</span><span class="o">-&gt;</span><span class="n">month</span><span class="p">);</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="nv">$items</span><span class="o">-&gt;</span><span class="nf">isEmpty</span><span class="p">())</span> <span class="p">{</span>
+            <span class="k">throw</span> <span class="k">new</span> <span class="nc">DomainException</span><span class="p">(</span><span class="s1">'No usage to invoice.'</span><span class="p">);</span>
+        <span class="p">}</span>
+
+        <span class="nv">$subtotal</span> <span class="o">=</span> <span class="nv">$items</span><span class="o">-&gt;</span><span class="nf">sum</span><span class="p">(</span><span class="k">fn</span><span class="p">(</span><span class="nv">$item</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="nv">$item</span><span class="o">-&gt;</span><span class="n">price</span><span class="p">);</span>
+        <span class="nv">$taxes</span> <span class="o">=</span> <span class="nv">$this</span><span class="o">-&gt;</span><span class="n">taxService</span><span class="o">-&gt;</span><span class="nf">compute</span><span class="p">(</span><span class="nv">$command</span><span class="o">-&gt;</span><span class="n">customerId</span><span class="p">,</span> <span class="nv">$subtotal</span><span class="p">);</span>
+        <span class="nv">$discount</span> <span class="o">=</span> <span class="nv">$this</span><span class="o">-&gt;</span><span class="n">discountService</span><span class="o">-&gt;</span><span class="nf">apply</span><span class="p">(</span><span class="nv">$command</span><span class="o">-&gt;</span><span class="n">customerId</span><span class="p">,</span> <span class="nv">$items</span><span class="p">);</span>
+        <span class="nv">$total</span> <span class="o">=</span> <span class="nv">$subtotal</span> <span class="o">+</span> <span class="nv">$taxes</span> <span class="o">-</span> <span class="nv">$discount</span><span class="p">;</span>
+
+        <span class="nv">$invoice</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">Invoice</span><span class="p">(</span>
+            <span class="n">customerId</span><span class="o">:</span> <span class="nv">$command</span><span class="o">-&gt;</span><span class="n">customerId</span><span class="p">,</span>
+            <span class="n">month</span><span class="o">:</span> <span class="nv">$command</span><span class="o">-&gt;</span><span class="n">month</span><span class="p">,</span>
+            <span class="n">subtotal</span><span class="o">:</span> <span class="nv">$subtotal</span><span class="p">,</span>
+            <span class="n">taxes</span><span class="o">:</span> <span class="nv">$taxes</span><span class="p">,</span>
+            <span class="n">discount</span><span class="o">:</span> <span class="nv">$discount</span><span class="p">,</span>
+            <span class="n">total</span><span class="o">:</span> <span class="nv">$total</span>
+        <span class="p">);</span>
+
+        <span class="nv">$invoice</span><span class="o">-&gt;</span><span class="nf">addLinesFromConsumption</span><span class="p">(</span><span class="nv">$items</span><span class="p">);</span>
+        <span class="nv">$this</span><span class="o">-&gt;</span><span class="n">invoices</span><span class="o">-&gt;</span><span class="nf">save</span><span class="p">(</span><span class="nv">$invoice</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="query">Query:</h3>
+
+<div class="language-php highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">class</span> <span class="nc">GetInvoiceBreakdownQuery</span>
+<span class="p">{</span>
+    <span class="k">public</span> <span class="k">function</span> <span class="n">__construct</span><span class="p">(</span>
+        <span class="k">public</span> <span class="k">readonly</span> <span class="kt">int</span> <span class="nv">$customerId</span><span class="p">,</span>
+        <span class="k">public</span> <span class="k">readonly</span> <span class="kt">DateTimeInterface</span> <span class="nv">$month</span>
+    <span class="p">)</span> <span class="p">{}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="handler-1">Handler:</h3>
+
+<div class="language-php highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">class</span> <span class="nc">GetInvoiceBreakdownHandler</span>
+<span class="p">{</span>
+    <span class="k">public</span> <span class="k">function</span> <span class="n">__construct</span><span class="p">(</span><span class="k">private</span> <span class="kt">InvoiceRepository</span> <span class="nv">$invoices</span><span class="p">)</span> <span class="p">{}</span>
+
+    <span class="k">public</span> <span class="k">function</span> <span class="n">handle</span><span class="p">(</span><span class="kt">GetInvoiceBreakdownQuery</span> <span class="nv">$query</span><span class="p">):</span> <span class="kt">InvoiceDTO</span>
+    <span class="p">{</span>
+        <span class="nv">$invoice</span> <span class="o">=</span> <span class="nv">$this</span><span class="o">-&gt;</span><span class="n">invoices</span><span class="o">-&gt;</span><span class="nf">findByCustomerAndMonth</span><span class="p">(</span><span class="nv">$query</span><span class="o">-&gt;</span><span class="n">customerId</span><span class="p">,</span> <span class="nv">$query</span><span class="o">-&gt;</span><span class="n">month</span><span class="p">);</span>
+        <span class="k">return</span> <span class="k">new</span> <span class="nc">InvoiceDTO</span><span class="p">(</span><span class="nv">$invoice</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h2 id="benefits-observed">Benefits Observed</h2>
+
+<ul>
+  <li><strong>Clarity:</strong> Command and query names clearly describe business actions</li>
+  <li><strong>Isolation:</strong> Each handler is easy to test independently</li>
+  <li><strong>Organization:</strong> Fits perfectly in a modular architecture</li>
+  <li><strong>Scalability:</strong> Easily plug in validation, logging, or events without bloating controllers</li>
+</ul>
+
+<h2 id="testing-handlers">Testing Handlers</h2>
+
+<p>CQRS simplifies unit testing. Each command or query is an isolated unit that can be tested without going through a controller or infrastructure.</p>
+
+<h3 id="example-test">Example Test:</h3>
+
+<div class="language-php highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nf">test</span><span class="p">(</span><span class="s1">'it generates an invoice with correct totals'</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nv">$consumptions</span> <span class="o">=</span> <span class="nf">collect</span><span class="p">([</span>
+        <span class="k">new</span> <span class="nc">ConsumptionItem</span><span class="p">(</span><span class="n">price</span><span class="o">:</span> <span class="mi">100</span><span class="p">),</span>
+        <span class="k">new</span> <span class="nc">ConsumptionItem</span><span class="p">(</span><span class="n">price</span><span class="o">:</span> <span class="mi">200</span><span class="p">),</span>
+    <span class="p">]);</span>
+
+    <span class="nv">$handler</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">GenerateMonthlyInvoiceHandler</span><span class="p">(</span>
+        <span class="k">new</span> <span class="nc">InMemoryConsumptionRepository</span><span class="p">(</span><span class="nv">$consumptions</span><span class="p">),</span>
+        <span class="k">new</span> <span class="nc">FakeInvoiceRepository</span><span class="p">(),</span>
+        <span class="k">new</span> <span class="nc">FixedTaxService</span><span class="p">(</span><span class="mi">20</span><span class="p">),</span>
+        <span class="k">new</span> <span class="nc">FixedDiscountService</span><span class="p">(</span><span class="mi">30</span><span class="p">)</span>
+    <span class="p">);</span>
+
+    <span class="nv">$handler</span><span class="o">-&gt;</span><span class="nf">handle</span><span class="p">(</span><span class="k">new</span> <span class="nc">GenerateMonthlyInvoiceCommand</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nf">now</span><span class="p">()));</span>
+
+    <span class="nf">expect</span><span class="p">(</span><span class="nc">FakeInvoiceRepository</span><span class="o">::</span><span class="nv">$savedInvoice</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">not</span><span class="o">-&gt;</span><span class="nf">toBeNull</span><span class="p">();</span>
+    <span class="nf">expect</span><span class="p">(</span><span class="nc">FakeInvoiceRepository</span><span class="o">::</span><span class="nv">$savedInvoice</span><span class="o">-&gt;</span><span class="n">total</span><span class="p">)</span><span class="o">-&gt;</span><span class="nf">toBe</span><span class="p">(</span><span class="mi">290</span><span class="p">);</span> <span class="c1">// 300 + 20 - 30</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h2 id="conclusion">Conclusion</h2>
+
+<p>CQRS is a valuable tool for structuring code when business logic becomes complex. It makes intentions explicit, responsibilities more focused, and code easier to test. While not necessary for every situation, it’s beneficial when services start feeling heavy or messy.</p>
+
+<h2 id="bonus-cqrs-vs-cqs">Bonus: CQRS vs CQS</h2>
+
+<ul>
+  <li><strong>CQS (Command Query Separation):</strong> A design principle where a method should either modify state (command) or return data (query), but never both.</li>
+  <li><strong>CQRS (Command Query Responsibility Segregation):</strong> Applies this principle at the application level by separating models, services, and logic for reads and writes.</li>
+</ul>
+
+<p>In essence, CQRS is structural, while CQS is behavioral.</p>
+
+  </div><a class="u-url" href="/2025/04/28/cqrs-laravel-11/" hidden></a>
+</article>
+
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/"></data>
+
+  <div class="wrapper">
+
+    <div class="footer-col-wrapper">
+
+      <div class="footer-col footer-col-2">
+        <img src="" style="max-width: 75px; border-radius: 100%">
+      </div>
+
+      <div class="footer-col footer-col-1"><ul class="social-media-list"><li><a href="mailto:hardev0a0@gmail.com"><span class="username">hardev0a0@gmail.com</span></a></li></ul>
+</div>
+
+      <div class="footer-col footer-col-3">
+        <p>Lead Software Engineer</p>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+</body>
+
+</html>

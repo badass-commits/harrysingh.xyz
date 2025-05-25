@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1"><!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>Orchestrating Multi-Lambda Workflows in Serverless Architectures | Harry Singh</title>
+<meta name="generator" content="Jekyll v3.10.0" />
+<meta property="og:title" content="Orchestrating Multi-Lambda Workflows in Serverless Architectures" />
+<meta name="author" content="Harry Singh" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="The more I have been working on AWS, the more I understanding the importance of well-architected solutions. Today, I would like to focus on the value of AWS Step Functions. What are Step Functions? The offical description is:" />
+<meta property="og:description" content="The more I have been working on AWS, the more I understanding the importance of well-architected solutions. Today, I would like to focus on the value of AWS Step Functions. What are Step Functions? The offical description is:" />
+<link rel="canonical" href="https://harrysingh.xyz/2022/03/05/aws-step-functions/" />
+<meta property="og:url" content="https://harrysingh.xyz/2022/03/05/aws-step-functions/" />
+<meta property="og:site_name" content="Harry Singh" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2022-03-05T13:48:42-06:00" />
+<meta name="twitter:card" content="summary" />
+<meta property="twitter:title" content="Orchestrating Multi-Lambda Workflows in Serverless Architectures" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Harry Singh"},"dateModified":"2022-03-05T13:48:42-06:00","datePublished":"2022-03-05T13:48:42-06:00","description":"The more I have been working on AWS, the more I understanding the importance of well-architected solutions. Today, I would like to focus on the value of AWS Step Functions. What are Step Functions? The offical description is:","headline":"Orchestrating Multi-Lambda Workflows in Serverless Architectures","mainEntityOfPage":{"@type":"WebPage","@id":"https://harrysingh.xyz/2022/03/05/aws-step-functions/"},"url":"https://harrysingh.xyz/2022/03/05/aws-step-functions/"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/assets/main.css"><link type="application/atom+xml" rel="alternate" href="https://harrysingh.xyz/feed.xml" title="Harry Singh" /></head>
+<body><header class="site-header" role="banner">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/">Harry Singh</a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger"><a class="page-link" href="/about/">About</a></div>
+      </nav></div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title p-name" itemprop="name headline">Orchestrating Multi-Lambda Workflows in Serverless Architectures</h1>
+    <p class="post-meta">
+      <time class="dt-published" datetime="2022-03-05T13:48:42-06:00" itemprop="datePublished">Mar 5, 2022
+      </time></p>
+  </header>
+
+  <div class="post-content e-content" itemprop="articleBody">
+    <p>The more I have been working on AWS, the more I understanding the importance of well-architected solutions. Today, I would like to focus on the value of <a href="https://aws.amazon.com/step-functions/?step-functions.sort-by=item.additionalFields.postDateTime&amp;step-functions.sort-order=desc">AWS Step Functions</a>. What are Step Functions? The offical description is:</p>
+
+<p><em>AWS Step Functions is a low-code visual workflow service used to orchestrate AWS services, automate business processes, and build serverless applications. Workflows manage failures, retries, parallelization, service integrations, and observability so developers can focus on higher-value business logic.</em></p>
+
+<p>Before we build out some architectures, let’s set some principles:</p>
+
+<ul>
+  <li><strong>Purposeful:</strong> Single function lambda’s for single-use cases. (not combining multiple businesslogic into a single lambda). This is to promote reuse.</li>
+  <li><strong>Event Driven:</strong> No polling or waiting on a cron which triggers to see if things have changed. I would like an end-to-end event driven architecture.</li>
+  <li><strong>Stateful:</strong> Non-Invoke Based (Callback hell). E.G Lambda A Invoked Lambda B from within Lambda A and waits for Lambda B to be done to return success/fail</li>
+</ul>
+
+<p>Now, as with any architecture, there are multiple ways to build out this example system. I will show two examples below and compare &amp; contrast the pros and cons of each, mainly focusing on how to use multiple lambdas together and why AWS Step Functions are beneficial.</p>
+
+<h2 id="model-one---sqs">Model One - SQS:</h2>
+
+<p><img src="/assets/images/posts/sqs.png" alt="SQS Diagram" /></p>
+
+<p>Let’s walk through the above diagram. We have a GitHub App configured on two events (A, B). We use a GitHub App to remove the “human” element of the connection, along with some other goodies like an increase in API Requests. The GitHub App will send a payload to our API, but before it reached the API, we use AWS Route 53 for our custom DNS record, which then will proxy down to our AWS Cloudfront Distribution.</p>
+
+<p>Once the payload reaches the API, we will first use the direct integration between AWS HTTP API Gateways and AWS Lambda to first process the data. Then, to communicate between the rest of the lambdas, we use AWS SQS to traffic data between lambdas for processing. Finally, data ends up in the database where you could use a service like AWS AppSync or another API Gateway to fetch the data.</p>
+
+<p>Let’s talk about the pros:</p>
+
+<ul>
+  <li><strong>Extensible:</strong> It’s extensible, as an individual SQS Queue fronts each function. Meaning, you’re able to quickly send data to that function from any service that can send structured data. You may know about Lambda X needing to send data to Lambda Y. Still when a new Lambda comes in, Lambda Z, it’s easy to add that lambda into the current architecture and send data to Lambda Y without breaking the current pattern.</li>
+</ul>
+
+<p>Let’s talk about the cons:</p>
+
+<ul>
+  <li><strong>Clean Arch:</strong> It’s a little messy. I am a big believer that most clean architectures are simple. Don’t overcomplicate something and add AWS services because it could fit a need. Look at alternatives to reduce your footprint. There are 6 SQS Queues; they seem to be the most predominant service in this design. Are they needed?</li>
+  <li><strong>Problem Finding:</strong> How easy is it to really find problems? We have a dead letter queue configured so any messages that don’t complete can be re-processed accordingly, but you only see a problem at a time; you don’t see the history of where that data has come from or where it has been or how it has been processed. You would have to write some custom code to do this.</li>
+  <li><strong>App Tracking:</strong> Amazon SQS requires you to implement application-level tracking, especially if your application uses multiple queues, which in this case, it does.</li>
+</ul>
+
+<p>Overall, this isn’t a bad architecture, it fits a use case, but could it be fine-tuned?</p>
+
+<h2 id="model-two---step-functions">Model Two - Step Functions</h2>
+
+<p><img src="/assets/images/posts/sf.png" alt="Step Functions" /></p>
+
+<p>Both ingress patterns into AWS are the same. The main difference starts when you get past the AWS HTTP API Gateway and into the data processing.</p>
+
+<p>As this solution has multiple lambdas, we use AWS Step Functions to coordinate how they interact. So, when a payload reaches the HTTP API, we trigger the AWS Step function. Data is processed by each lambda and sent back to the state machine, where finally it inserts data into the DB and uses a custom AWS SNS Topic to send an email on success/error.</p>
+
+<p>Both have similar architectures but differ slightly in data communication; let’s discuss the detail …</p>
+
+<p>Let’s talk about the pros:</p>
+
+<ul>
+  <li><strong>Less Code:</strong> We don’t have to write a custom lambda to enter data into the DB. Step functions have a native integration with DynamoDB, meaning we don’t have to write code to do something preexisting. More information on integrations can be found here: <a href="https://docs.aws.amazon.com/step-functions/latest/dg/concepts-service-integrations.html">Using AWS Step Functions with other services</a>.</li>
+  <li><strong>Less AWS Resource(s):</strong> No need for any queues. We use the state machine to send data to the following lambda in the chain. More information on how to send data within step functions can be found here: <a href="https://docs.aws.amazon.com/step-functions/latest/dg/concepts-state-machine-data.html">State Machine Data</a></li>
+  <li><strong>Process Overview:</strong> Easy to see the whole process in action. Step Functions easy allow you to see the data that is processing. To see more information on seeing the overall process, check out this link: <a href="https://docs.aws.amazon.com/step-functions/latest/dg/concepts-state-machine-data.html">Input and Output Processing in Step Functions</a></li>
+  <li><strong>Easy to find problems:</strong> Don’t you dislike having to crawl through cloudwatch events to find errors logged out from a lambdas console? Using AWS Step Functions allows you to quickly find errors via the Step Functions GUI as you can crawl through the state machines events to find problems. I find this link really useful for more information on debugging: <a href="https://docs.aws.amazon.com/step-functions/latest/dg/monitoring-logging.html">Monitoring &amp; Logging</a></li>
+  <li><strong>Built in retries:</strong> Sometimes lambdas error and writes into DynamoDB’s fail. Although they are rare, if not handled correctly, they could cause downstream dilemmas. Step Functions have inbuilt retry capabilities that allow you to retry on specific errors. Meaning you can only retry on specific event errors that you would like to retry on. More information on this can be found here: <a href="https://aws.amazon.com/blogs/developer/handling-errors-retries-and-adding-alerting-to-step-function-state-machine-executions/">Monitoring &amp; Logging</a></li>
+</ul>
+
+<p>Let’s talk about the cons:</p>
+
+<ul>
+  <li><strong>Con One:</strong> Step Functions has some pretty strict and small <a href="https://docs.aws.amazon.com/step-functions/latest/dg/limits-overview.html">limits</a> (I actually think this article is a nice summary of the limits: Think Twice Before Using Step Functions — Check the AWS Serverless Service Quotas). If you are processing lots of data, you would need to split your step functions into multiple state machines. One idea on how to architect your solution around this limit is to create a parent/child sate machine. E.G, a child state machine could process a single data entry at a time, which invokes from a parent state machine that loops through the data, but doesn’t directly do any of the processing, so it stays within limits.</li>
+  <li><strong>Con Two:</strong> If another system needs to reuse a specific function, there is no queue in front of it, making it harder to call. Making the architecture not amazingly extensible. Yes, you can still use AWS SQS with step functions, but unless you think it’s needed externally to this use case, it likely isn’t required.</li>
+</ul>
+
+<p>Overall, I genuinely believe this architecture is cleaner and runs a more robust process than the previous design.</p>
+
+<h2 id="going-into-detail-about-step-functions">Going into detail about Step Functions</h2>
+
+<p>I would like to focus on two core parts of step functions that stand out to me:</p>
+
+<h3 id="feature-one-built-in-looping-through-arrays">Feature One: Built in looping through arrays</h3>
+<p>Let’s say you have a data set of 1,000 users. You could send all 1,000 users to the lambda via an SQS Queue (but you can only send ten records at a time, remember), loop through all users, process them accordingly and send them back to the state machine. Or, you could use the inbuilt map feature within Step Functions that will map through the user’s array at the sate machine level and send one user record at a time to the lambda for processing. Why would you do this? It allows you to write less code within your lambda, fewer loops, hopefully, quicker processing. In my opinion, it also makes your code cleaner.</p>
+
+<p>It looks a little like this within the state machine definition file:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Invoke Worker State Machine:
+Type: Map
+InputPath: "$.users"
+MaxConcurrency: 50
+Parameters:
+    UserDetails.$: "$$.Map.Item.Value"
+</code></pre></div></div>
+
+<h3 id="feature-two-aws-step-functions-can-call-aws-step-functions">Feature Two: AWS Step Functions can call AWS Step Functions</h3>
+<p>As mentioned above, AWS Step Functions have some pretty strict (and small) limits. Meaning you have to architect your solutions correctly. An elegant aspect of Step Functions is they can call other <a href="https://docs.aws.amazon.com/step-functions/latest/dg/sample-start-workflow.html">step functions</a>. Meaning if you have been processing lots of data and are reaching limits, you can split up your Step Function into one parent step function, and then a child step function where you send one data record at a time to be processed individually from the parent.</p>
+
+<p>It looks a little like this within the state machine definition file:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Iterator:
+StartAt: Invoke Worker State Machine Task
+States:
+    Invoke Worker State Machine Task:
+    Type: Task
+    Resource: arn:aws:states:::states:startExecution.sync:2
+    Parameters:
+        StateMachineArn: "${ChildStateMachineArn}"
+        Input:
+        UserDetails.$: "$.UserDetails"
+        AWS_STEP_FUNCTIONS_STARTED_BY_EXECUTION_ID.$: "$$.Ex.Id"
+</code></pre></div></div>
+<p>Taking the above two code snippets, you are looping through the user’s array of objects and sending one user at a time. Let’s say you have 1,000 users; you are spinning up 1,000 child step functions and processing one user at a time.</p>
+
+<p>These are just two features that I think make Step Functions a great resource to use when co-ordinating a multi-lambda solution. However, there are so many more, check out the docs <a href="https://docs.aws.amazon.com/step-functions/latest/dg/welcome.html">here</a> for more information.</p>
+
+<h2 id="conclusion">Conclusion</h2>
+<p>I have found Step Functions to be a great resource when working across lambdas. They give you more confidence in your design and allow you to write less code, and in most cases, less code is better code, right?</p>
+
+  </div><a class="u-url" href="/2022/03/05/aws-step-functions/" hidden></a>
+</article>
+
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/"></data>
+
+  <div class="wrapper">
+
+    <div class="footer-col-wrapper">
+
+      <div class="footer-col footer-col-2">
+        <img src="" style="max-width: 75px; border-radius: 100%">
+      </div>
+
+      <div class="footer-col footer-col-1"><ul class="social-media-list"><li><a href="mailto:hardev0a0@gmail.com"><span class="username">hardev0a0@gmail.com</span></a></li></ul>
+</div>
+
+      <div class="footer-col footer-col-3">
+        <p>Lead Software Engineer</p>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+</body>
+
+</html>

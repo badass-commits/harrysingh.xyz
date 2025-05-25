@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1"><!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>Build a customizable Vue.js modal with Tailwind CSS | Harry Singh</title>
+<meta name="generator" content="Jekyll v3.10.0" />
+<meta property="og:title" content="Build a customizable Vue.js modal with Tailwind CSS" />
+<meta name="author" content="Harry Singh" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="As I was hanging out with the Tailwind CSS Slack community the other day, I had a request to write a tutorial on how to make a Vue.js modal styled with Tailwind. That sounds like an excellent component to build, so let’s get to it." />
+<meta property="og:description" content="As I was hanging out with the Tailwind CSS Slack community the other day, I had a request to write a tutorial on how to make a Vue.js modal styled with Tailwind. That sounds like an excellent component to build, so let’s get to it." />
+<link rel="canonical" href="https://harrysingh.xyz/2023/12/14/vue-modal-with-tailwind/" />
+<meta property="og:url" content="https://harrysingh.xyz/2023/12/14/vue-modal-with-tailwind/" />
+<meta property="og:site_name" content="Harry Singh" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2023-12-14T14:00:00-06:00" />
+<meta name="twitter:card" content="summary" />
+<meta property="twitter:title" content="Build a customizable Vue.js modal with Tailwind CSS" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Harry Singh"},"dateModified":"2023-12-14T14:00:00-06:00","datePublished":"2023-12-14T14:00:00-06:00","description":"As I was hanging out with the Tailwind CSS Slack community the other day, I had a request to write a tutorial on how to make a Vue.js modal styled with Tailwind. That sounds like an excellent component to build, so let’s get to it.","headline":"Build a customizable Vue.js modal with Tailwind CSS","mainEntityOfPage":{"@type":"WebPage","@id":"https://harrysingh.xyz/2023/12/14/vue-modal-with-tailwind/"},"url":"https://harrysingh.xyz/2023/12/14/vue-modal-with-tailwind/"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/assets/main.css"><link type="application/atom+xml" rel="alternate" href="https://harrysingh.xyz/feed.xml" title="Harry Singh" /></head>
+<body><header class="site-header" role="banner">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/">Harry Singh</a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger"><a class="page-link" href="/about/">About</a></div>
+      </nav></div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title p-name" itemprop="name headline">Build a customizable Vue.js modal with Tailwind CSS</h1>
+    <p class="post-meta">
+      <time class="dt-published" datetime="2023-12-14T14:00:00-06:00" itemprop="datePublished">Dec 14, 2023
+      </time></p>
+  </header>
+
+  <div class="post-content e-content" itemprop="articleBody">
+    <p>As I was hanging out with the Tailwind CSS <a href="https://tailwindcss.slack.com/join/shared_invite/enQtMjc2NTA1NTg0NTEyLTY4ZTg1YWFjM2NjMTRkMmNkMTA4MGNiZTFmNDYyYTJhNjNkY2QxODQwODE4MWRiZDFlNzdmOGI0MmQ1M2EzZmQ">Slack community</a> the other day, I had a request to write a tutorial on how to make a Vue.js modal styled with Tailwind. That sounds like an excellent component to build, so let’s get to it.</p>
+
+<h3 id="set-up">Set Up</h3>
+<p>Per usual, we’ll be starting with a regular Laravel project. I’ve covered this process in a previous post, but for a quick recap here are the steps.</p>
+
+<ol>
+  <li>Create a new Laravel project by following the <a href="https://laravel.com/docs/5.5/installation">docs</a></li>
+  <li><a href="https://nick-basile.com/blog/post/how-to-build-a-vuejs-component-with-tailwind-in-a-laravel-project">Configure</a> our <code class="language-plaintext highlighter-rouge">welcome.blade.php</code> so we can use Vue.js</li>
+  <li>Add Tailwind CSS to the project through <a href="https://tailwindcss.com/docs/installation/#npm">Yarn or NPM</a></li>
+  <li><a href="https://www.youtube.com/watch?v=tO5sxLapAts">Profit</a>?</li>
+</ol>
+
+<h3 id="hop-on-the-event-bus">Hop on the Event Bus</h3>
+<p>With our usual configuration out of the way, we can layer on the custom details we need for this project. Since we’ll want to trigger our modal from anywhere in our code, we need to set up a Vue event bus.</p>
+
+<p>This is super simple. We just hop into our <code class="language-plaintext highlighter-rouge">app.js</code> file and right after we require Vue, we can and add the following:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>//Event Bus
+window.bus = new Vue();
+</code></pre></div></div>
+<p>Now, we can use our event bus to communicate between components. If you’re looking for some more information about what a event bus does, you can always check out the <a href="https://vuejs.org/v2/guide/components.html#Non-Parent-Child-Communication">Vue docs</a>. But, I think it’ll start to make more sense when we use it.</p>
+
+<p>With that set up, we can get rid of the example component (if you haven’t already) and add in our modal component.</p>
+
+<p>In <code class="language-plaintext highlighter-rouge">resources/assets/js/components</code>, we can delete the <code class="language-plaintext highlighter-rouge">ExampleComponent.vue</code> and add our own file called <code class="language-plaintext highlighter-rouge">modal.vue</code>. Now, inside of <code class="language-plaintext highlighter-rouge">resources/assets/js/app.js</code> we can update the component import to reference our <code class="language-plaintext highlighter-rouge">modal</code> component instead of the example so it looks like this:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Vue.component('modal-component', require('./components/modal.vue'));
+</code></pre></div></div>
+<p>Now, we can go ahead and add our component to our <code class="language-plaintext highlighter-rouge">welcome.blade.php</code>.</p>
+
+<p>Lastly, we’re going to use some “advanced” JavaScript in this tutorial. But, no need to worry, we’ll walk through it step-by-step. So, in the same directory as <code class="language-plaintext highlighter-rouge">modal.vue</code> we can add <code class="language-plaintext highlighter-rouge">modal.js</code>.</p>
+
+<p>To see this all running in the browser, we’ll need to run our Laravel Mix. If you’re following along, I recommend using <code class="language-plaintext highlighter-rouge">npm run watch</code> so your code changes automatically get compiled.</p>
+
+<p>With our Vue component ready, let’s add a custom color that we’ll end up needing for our modal background overlay to our Tailwind config.</p>
+
+<h3 id="the-time-has-come-to-configure-tailwind">The Time Has Come to Configure Tailwind</h3>
+<p>Can you believe that we’ve already made it through 3 other Tailwind tutorials on this blog before we had to edit the default settings? While the default settings have gotten us this far, we need to add a color to make sure our modal background has an opacity.</p>
+
+<p>To add this color, we can hop into our <code class="language-plaintext highlighter-rouge">tailwind.js</code> file that should be in the root directory of our project. Here we can see all sorts of options, but we just need to focus on the color variable. Inside this object, we can add this: <code class="language-plaintext highlighter-rouge">'transparent-black': 'rgba(0,0,0,.2)'</code>.</p>
+
+<p>Now, we need to make sure we run our Laravel Mix so this new color gets added to our Tailwind code. After you run that, you’ll be able to reference this color like you have any other Tailwind color. How cool is that?</p>
+
+<h3 id="super-spooky-advanced-js">Super Spooky Advanced JS</h3>
+<p>With all of our set up out of the way, we’re finally ready to start building this modal. Let’s get the “hard” stuff out of the way first by opening up our <code class="language-plaintext highlighter-rouge">modal.js</code> and creating a <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes">JavaScript Class</a> that we can use to create dynamic modals on the fly.</p>
+
+<p>To start, let’s think about what we’ll want our modal to do. We’ll obviously need to be able to show and dismiss it when needed. The header and body text should probably be customizable as well. Plus, it would be great if we could tell it what type of modal to be, like a succesful modal or an error one.</p>
+
+<p>With that in mind, we can come up with a JavaScript class that’ll be a representation of what our modal should be. Now, you might be asking yourself, “why don’t we just do all of this in our Vue component and be done?” And, you’re totally right! You could skip all of this entirely and just worry about passing events to your Vue component.</p>
+
+<p>However, I really like using classes for use-cases like this because it allows us to define an API that you, and your teammates, can use to interact with a component. So, instead of worrying about how to package up the correct data to send to your component, you can do something like this instead:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>vueModal().title('Hello World').success().show();
+</code></pre></div></div>
+<p>Pretty cool, right? With that little detour out of the way, let’s return to creating our class by just defining and exporting it, like so:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>let VueModal = class VueModal {
+  constructor() {
+
+  }
+
+};
+
+export default VueModal;
+</code></pre></div></div>
+<p>As you can see, we have a nice, simple JavaScript class. Thinking back to what we talked about earlier, we want our modal to have a header, a body, a “type”, and to be toggable. So, let’s define this in our class.</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>let VueModal = class VueModal {
+  constructor(header = null, body = null, type = null, visible = true) {
+    this.header = header || 'title';
+    this.body = body || 'text';
+    this.type = type || 'default';
+    this.visible = visible;
+  }
+
+};
+
+export default VueModal;
+</code></pre></div></div>
+<p>All we’ve done here is define the properties that we want to store on the class. We’ve also provided some handy default values in case we forget to pass in the data.</p>
+
+<p>Now, we’re going to add some “setters” so we can use that chainable API I previewed earlier. We want to create methods that’ll allow us to set all of the properties as we need to. So, those methods will look something like this:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>let VueModal = class VueModal {
+  constructor(header = null, body = null, type = null, visible = true) {
+    this.header = header || 'Title';
+    this.body = body || 'text';
+    this.type = type || 'default';
+    this.visible = visible;
+  }
+
+  title(header) {
+    this.header = header;
+
+    return this;
+  }
+
+  text(body) {
+    this.body = body;
+
+    return this;
+  }
+
+  appearance(type) {
+    this.type = type;
+
+    return this;
+  }
+
+  success() {
+    this.type = 'success';
+
+    return this;
+  }
+
+  error() {
+    this.type = 'error';
+
+    return this;
+  }
+
+  info() {
+    this.type = 'info';
+
+    return this;
+  }
+
+  warning() {
+    this.type = 'warning';
+
+    return this;
+  }
+
+  show() {
+    window.bus.$emit('show-modal', this);
+
+    return this;
+  }
+
+  dismiss() {
+    window.bus.$emit('dismiss-modal');
+
+    return this;
+  }
+};
+
+export default VueModal;
+</code></pre></div></div>
+<p>We’ve added a lot here, but really all that we’ve done is provided some handy methods that let us set our class’ values and define our modal on the fly. Take a look at the methods and see what we’re doing. In most cases, we’re either taking in a passed value and setting a property, or we’re setting it based on a hard-coded value.</p>
+
+<p>The only exceptions are <code class="language-plaintext highlighter-rouge">show()</code> and <code class="language-plaintext highlighter-rouge">dismiss()</code>. Here, we’re leveraging that event bus we created earlier to talk to our Vue component. When we create our Vue component, we’ll register some listeners that can respond to these messages.</p>
+
+<p>While this wraps up our modal class, you may still be a bit confused about how it’ll work. Don’t worry, as we build our Vue component, it’ll start making a lot more sense.</p>
+
+<h3 id="its-vue-time">It’s Vue Time</h3>
+<p>Our Vue component is going to be pretty simple because we’ve already done most of the work defining our data in our class. Let’s jump into our template and get this party started.</p>
+
+<p>Like any good modal we’ll need: a background overlay, the modal itself, a header, some body text, and a button. So, our template will look like this:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>&lt;template&gt;
+    &lt;div v-if="modal.visible" @click.self="dismissModal"&gt;
+        &lt;div&gt;
+            &lt;div&gt;
+                &lt;h1&gt;&lt;/h1&gt;
+            &lt;/div&gt;
+            &lt;div&gt;
+                &lt;p&gt;&lt;/p&gt;
+            &lt;/div&gt;
+            &lt;div&gt;
+                &lt;button :class="typeColor" @click="dismissModal"&gt;Ok&lt;/button&gt;
+            &lt;/div&gt;
+        &lt;/div&gt;
+    &lt;/div&gt;
+&lt;/template&gt;
+</code></pre></div></div>
+<p>Pretty simple, right? We’ve got our background wrapper, which we’re toggling based on whether <code class="language-plaintext highlighter-rouge">modal.visible</code> is true. Then, we’ve also bound a method on click that’ll dismiss the modal when only the background is clicked. We achieve that with the fancy click modifier <code class="language-plaintext highlighter-rouge">.self</code>. This lets our user interact with the modal without accidently dismissing it.</p>
+
+<p>In the modal itself, we’re really just displaying our modal attributes. Lastly, our button has the same <code class="language-plaintext highlighter-rouge">dimissModal</code> method binding as our wrapper plus some dynamic classes that change based on the type of modal we’re showing. All in all, not the most complicated component ever.</p>
+
+<p>Now that we’re all warmed up, let’s check out our component’s script section.</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>&lt;script&gt;
+    import VueModal from './modal.js';
+
+    export default {
+        data() {
+          return {
+              modal: {
+                  header: 'Header',
+                  body: 'Body',
+                  type: 'default',
+                  visible: false,
+              }
+          }
+        },
+        computed: {
+          typeColor() {
+              let color;
+
+              switch(this.modal.type) {
+                  case 'success':
+                      color = 'bg-green hover:bg-green-dark'
+                      break;
+                  case 'error':
+                      color = 'bg-red hover:bg-red-dark'
+                      break;
+                  case 'info':
+                      color = 'bg-blue hover:bg-blue-dark'
+                      break;
+                  case 'warning':
+                      color = 'bg-yellow hover:bg-yellow-dark'
+                      break;
+                  default:
+                      color = 'bg-teal hover:bg-teal-dark'
+              }
+
+              return color;
+          }
+        },
+        created() {
+            this.initModal();
+        },
+        methods: {
+          initModal() {
+              window.vueModal = (header = null, body = null, type = null, visible = true) =&gt; {
+                  return new VueModal(header, body, type, visible)
+              };
+
+              this.initListeners();
+          },
+          initListeners() {
+              window.bus.$on('show-modal', (modal) =&gt; {
+                  this.modal = modal;
+                  document.body.classList.add("overflow-hidden");
+              });
+
+              window.bus.$on('dismiss-modal', () =&gt; {
+                  this.modal.visible = false;
+                  document.body.classList.remove("overflow-hidden");
+              });
+          },
+          dismissModal() {
+              return vueModal().dismiss();
+          }
+        }
+    }
+&lt;/script&gt;
+</code></pre></div></div>
+<p>Let’s break all of this down from the top. At the beginning of this section, we’re importing our VueModal class so we can use is throughout our component. Next, we have our data. Here, we have a modal object where we’ve defined some default values for our modal. Using an object like this also makes it easier for us to overwrite these values with the values we instantiate in our VueModal class.</p>
+
+<p>Below our data, we have a computed property called typeColor. In here, we have a switch statement that matches our Tailwind styles to the type we define in our data. You earned some bonus points if you noticed that these type values correspond with what we defined in our class earlier.</p>
+
+<p>Next, we have our created lifecycle hook. In here, we’re calling the <code class="language-plaintext highlighter-rouge">initModal()</code> method. Moving right along to our methods object, we can see that the first method is in fact <code class="language-plaintext highlighter-rouge">initModal()</code>. Here’s the bread and butter of what we’ve been working towards.</p>
+
+<p>First, we’re binding a method to the window called <code class="language-plaintext highlighter-rouge">vueModal()</code>. This method accepts the values we need to pass to our VueModal class. Then, it instantiates a new instance of our VueModal class and passes in any of the values defined. Lastly, we then call our next method: <code class="language-plaintext highlighter-rouge">initListeners()</code>.</p>
+
+<p>Inside of <code class="language-plaintext highlighter-rouge">initListeners()</code>, we’ve created two listeners to respond to the events that we set up in our class earlier. In the show-modal listener, we’re setting our modal data to the passed in value, which was an instance of our class. Then, we’re using some vanilla JavaScript to add <code class="language-plaintext highlighter-rouge">.overflow-hidden</code> to the document’s body element. This prevents the page from scrolling when our modal is open. In our second listener, we’re simply hiding our modal and removing <code class="language-plaintext highlighter-rouge">.overflow-hidden</code> from the body.</p>
+
+<p>Finally, we have our last method <code class="language-plaintext highlighter-rouge">dismissModal()</code>. Here, we’re simply calling the <code class="language-plaintext highlighter-rouge">.dismiss()</code> method on the <code class="language-plaintext highlighter-rouge">vueModal()</code> we defined earlier when we initialized the modal.</p>
+
+<p>Whew, that was a good bit of code! But, now we have a nice modal component that we can trigger with a chainable API. Let’s run our Laravel Mix; grab that preview snippet from earlier, and run that through our console.
+<img src="/assets/images/posts/vue-tailwind-modal-1.png" alt="vue-tailwind-modal-1" />
+If everything went as planned, you should have started with an empty page, and then the modal should have appeared when you ran our snippet. Finally you can see how valuable using a class can be. We can trigger easy-to-understand, customizable modals from anywhere in our code!</p>
+
+<p>Feel free to take a break now and play around with our modal. When you’re ready to continue, we’ll finish our modal with some Tailwind classes.</p>
+
+<h3 id="sailing-off-with-tailwind">Sailing off with Tailwind</h3>
+<p>Let’s wrap this modal up with some nice Tailwind classes. To start, we’ll need our wrapper <code class="language-plaintext highlighter-rouge">div</code> to take up the whole page; center our modal in the middle, and have our custom background. We can do that by adding the following classes: <code class="language-plaintext highlighter-rouge">.pin</code> <code class="language-plaintext highlighter-rouge">.absolute</code> <code class="language-plaintext highlighter-rouge">.flex</code> <code class="language-plaintext highlighter-rouge">.items-center</code> <code class="language-plaintext highlighter-rouge">.justify-center</code> <code class="language-plaintext highlighter-rouge">.bg-transparent-black</code>. Most of this is pretty self-explanatory, but <code class="language-plaintext highlighter-rouge">.pin</code> is a little special. It applies the following css to an element:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>top: 0;
+right: 0;
+bottom: 0;
+left: 0;
+width: 100%;
+height: 100%;
+</code></pre></div></div>
+<p>For an absolutely positioned element, like our background, this is perfect for ensuring it fills the entire page in any situation.</p>
+
+<p>Onto the modal itself! We can give it some rounded corners, dynamic sizing, white background, and more with the following: <code class="language-plaintext highlighter-rouge">.bg-white</code>, <code class="language-plaintext highlighter-rouge">.rounded</code>, <code class="language-plaintext highlighter-rouge">.shadow</code>, <code class="language-plaintext highlighter-rouge">.p-8</code>, <code class="language-plaintext highlighter-rouge">.m-4</code>, <code class="language-plaintext highlighter-rouge">.max-w-lg</code>, <code class="language-plaintext highlighter-rouge">.max-h-full</code>, <code class="language-plaintext highlighter-rouge">.text-center</code>, <code class="language-plaintext highlighter-rouge">.overflow-y-scroll</code>.</p>
+
+<p>Our interior divs don’t need too much work. The first one can have a <code class="language-plaintext highlighter-rouge">.mb-4</code> for some spacing from the body, while the second one can have some extra spacing from the button with an <code class="language-plaintext highlighter-rouge">.mb-8</code>.</p>
+
+<p>Finally, our button just needs some spacing to round out the dynamic classes it’s receiving from our computed property. We’ll just add <code class="language-plaintext highlighter-rouge">.text-white</code>, <code class="language-plaintext highlighter-rouge">.py-2</code>, <code class="language-plaintext highlighter-rouge">.px-4</code>, and <code class="language-plaintext highlighter-rouge">.rounded</code>.</p>
+
+<p>Bada bing bada boom, we’ve got ourselves a fully styled modal component! Running our snippet from earlier, let’s see how it looks.
+<img src="/assets/images/posts/vue-tailwind-modal-2.png" alt="vue-tailwind-modal-2" /></p>
+
+<h3 id="thats-a-wrap">That’s a Wrap</h3>
+<p>Well isn’t that a thing of beauty. Good work coming along for this tutorial. I hope that I’ve been able to expose you to some patterns that’ll prove useful in your future projects!</p>
+
+  </div><a class="u-url" href="/2023/12/14/vue-modal-with-tailwind/" hidden></a>
+</article>
+
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/"></data>
+
+  <div class="wrapper">
+
+    <div class="footer-col-wrapper">
+
+      <div class="footer-col footer-col-2">
+        <img src="" style="max-width: 75px; border-radius: 100%">
+      </div>
+
+      <div class="footer-col footer-col-1"><ul class="social-media-list"><li><a href="mailto:hardev0a0@gmail.com"><span class="username">hardev0a0@gmail.com</span></a></li></ul>
+</div>
+
+      <div class="footer-col footer-col-3">
+        <p>Lead Software Engineer</p>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+</body>
+
+</html>

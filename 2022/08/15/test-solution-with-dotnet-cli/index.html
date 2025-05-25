@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1"><!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>Scripting the dotnet CLI for Rapid Test Setup | Harry Singh</title>
+<meta name="generator" content="Jekyll v3.10.0" />
+<meta property="og:title" content="Scripting the dotnet CLI for Rapid Test Setup" />
+<meta name="author" content="Harry Singh" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="From time to time, I need to create a small C# or F# solution to experiment with a code feature or a library function. Often, what I want to do is create a simple console application and a unit test project that references the console application. This isn’t hard to do in Visual Studio, but it feels like it takes too many steps." />
+<meta property="og:description" content="From time to time, I need to create a small C# or F# solution to experiment with a code feature or a library function. Often, what I want to do is create a simple console application and a unit test project that references the console application. This isn’t hard to do in Visual Studio, but it feels like it takes too many steps." />
+<link rel="canonical" href="https://harrysingh.xyz/2022/08/15/test-solution-with-dotnet-cli/" />
+<meta property="og:url" content="https://harrysingh.xyz/2022/08/15/test-solution-with-dotnet-cli/" />
+<meta property="og:site_name" content="Harry Singh" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2022-08-15T16:56:42-05:00" />
+<meta name="twitter:card" content="summary" />
+<meta property="twitter:title" content="Scripting the dotnet CLI for Rapid Test Setup" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Harry Singh"},"dateModified":"2022-08-15T16:56:42-05:00","datePublished":"2022-08-15T16:56:42-05:00","description":"From time to time, I need to create a small C# or F# solution to experiment with a code feature or a library function. Often, what I want to do is create a simple console application and a unit test project that references the console application. This isn’t hard to do in Visual Studio, but it feels like it takes too many steps.","headline":"Scripting the dotnet CLI for Rapid Test Setup","mainEntityOfPage":{"@type":"WebPage","@id":"https://harrysingh.xyz/2022/08/15/test-solution-with-dotnet-cli/"},"url":"https://harrysingh.xyz/2022/08/15/test-solution-with-dotnet-cli/"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/assets/main.css"><link type="application/atom+xml" rel="alternate" href="https://harrysingh.xyz/feed.xml" title="Harry Singh" /></head>
+<body><header class="site-header" role="banner">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/">Harry Singh</a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger"><a class="page-link" href="/about/">About</a></div>
+      </nav></div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title p-name" itemprop="name headline">Scripting the dotnet CLI for Rapid Test Setup</h1>
+    <p class="post-meta">
+      <time class="dt-published" datetime="2022-08-15T16:56:42-05:00" itemprop="datePublished">Aug 15, 2022
+      </time></p>
+  </header>
+
+  <div class="post-content e-content" itemprop="articleBody">
+    <p>From time to time, I need to create a small C# or F# solution to experiment with a code feature or a library function. Often, what I want to do is create a simple console application and a unit test project that references the console application. This isn’t hard to do in Visual Studio, but it feels like it takes too many steps.</p>
+
+<p>Recently, I read a fantastic new book called Essential F#, by Ian Russel. (You can get <a href="https://leanpub.com/essential-fsharp">it here</a>) In it, he showed that you could quickly create the setup I described above with the dotnet CLI. It was an idea so brilliantly simple that I’m jealous that I didn’t think of it. But I did take it a step further and created a bat file to further automate the process.</p>
+
+<p>The commands in this script are taken directly from the book. The only modification I’ve made is to parameterize the solution name and the project name.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>dotnet new sln -o %1
+cd %1
+mkdir src
+dotnet new console -lang F# -o src/%2
+dotnet sln add src/%2/%2.fsproj
+mkdir tests
+dotnet new xunit -lang F# -o tests/%2Tests
+dotnet sln add tests/%2Tests/%2Tests.fsproj
+cd tests/%2Tests
+dotnet add reference ../../src/%2/%2.fsproj
+dotnet add package FsUnit
+dotnet add package FsUnit.XUnit
+dotnet build
+dotnet test
+</code></pre></div></div>
+
+<p>With this script, you could execute something like this command:</p>
+
+<p><code class="language-plaintext highlighter-rouge">CreateFSharpProject SampleSolution SampleProject</code></p>
+
+<p>This would create a new Solution named SampleSolution. It would contain two projects F#, SampleProject and SampleProjectTests. The test project already has a reference to the primary project and is ready to execute the tests with FsUnit.</p>
+
+<p>I created a similar script file for C# and MSTest.</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>dotnet new sln -o %1
+cd %1
+mkdir src
+dotnet new console -lang C# -o src/%2
+dotnet sln add src/%2/%2.csproj
+mkdir tests
+dotnet new mstest -lang C# -o tests/%2Tests
+dotnet sln add tests/%2Tests/%2Tests.csproj
+cd tests/%2Tests
+dotnet add reference ../../src/%2/%2.csproj
+dotnet build
+dotnet test
+</code></pre></div></div>
+<p>With these scripts, you can quickly create solutions with the unit test project already configured. That way, you can jump right into the code experiment you want to run.</p>
+
+<p>You can take this concept and modify it to create whatever kind of project and unit test project you want. Hopefully, it is a simple little time saver for you.</p>
+
+  </div><a class="u-url" href="/2022/08/15/test-solution-with-dotnet-cli/" hidden></a>
+</article>
+
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/"></data>
+
+  <div class="wrapper">
+
+    <div class="footer-col-wrapper">
+
+      <div class="footer-col footer-col-2">
+        <img src="" style="max-width: 75px; border-radius: 100%">
+      </div>
+
+      <div class="footer-col footer-col-1"><ul class="social-media-list"><li><a href="mailto:hardev0a0@gmail.com"><span class="username">hardev0a0@gmail.com</span></a></li></ul>
+</div>
+
+      <div class="footer-col footer-col-3">
+        <p>Lead Software Engineer</p>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+</body>
+
+</html>

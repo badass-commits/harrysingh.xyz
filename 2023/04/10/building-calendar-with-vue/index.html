@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1"><!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>Building a calendar with Vue.js | Harry Singh</title>
+<meta name="generator" content="Jekyll v3.10.0" />
+<meta property="og:title" content="Building a calendar with Vue.js" />
+<meta name="author" content="Harry Singh" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="Last week, Patrick walked us through some high-level considerations to take into account when building a calendar. So this week, let’s take a stab at implementing a calendar with Vue.js. Because there is so much that goes into building a calendar, we’ll focus our efforts this week on creating a simple Vue component that can display a month of dates organized by the days of the week, toggle between different months, and show us what the current date is. Basically something like this:" />
+<meta property="og:description" content="Last week, Patrick walked us through some high-level considerations to take into account when building a calendar. So this week, let’s take a stab at implementing a calendar with Vue.js. Because there is so much that goes into building a calendar, we’ll focus our efforts this week on creating a simple Vue component that can display a month of dates organized by the days of the week, toggle between different months, and show us what the current date is. Basically something like this:" />
+<link rel="canonical" href="https://harrysingh.xyz/2023/04/10/building-calendar-with-vue/" />
+<meta property="og:url" content="https://harrysingh.xyz/2023/04/10/building-calendar-with-vue/" />
+<meta property="og:site_name" content="Harry Singh" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2023-04-10T15:00:00-05:00" />
+<meta name="twitter:card" content="summary" />
+<meta property="twitter:title" content="Building a calendar with Vue.js" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Harry Singh"},"dateModified":"2023-04-10T15:00:00-05:00","datePublished":"2023-04-10T15:00:00-05:00","description":"Last week, Patrick walked us through some high-level considerations to take into account when building a calendar. So this week, let’s take a stab at implementing a calendar with Vue.js. Because there is so much that goes into building a calendar, we’ll focus our efforts this week on creating a simple Vue component that can display a month of dates organized by the days of the week, toggle between different months, and show us what the current date is. Basically something like this:","headline":"Building a calendar with Vue.js","mainEntityOfPage":{"@type":"WebPage","@id":"https://harrysingh.xyz/2023/04/10/building-calendar-with-vue/"},"url":"https://harrysingh.xyz/2023/04/10/building-calendar-with-vue/"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/assets/main.css"><link type="application/atom+xml" rel="alternate" href="https://harrysingh.xyz/feed.xml" title="Harry Singh" /></head>
+<body><header class="site-header" role="banner">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/">Harry Singh</a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger"><a class="page-link" href="/about/">About</a></div>
+      </nav></div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title p-name" itemprop="name headline">Building a calendar with Vue.js</h1>
+    <p class="post-meta">
+      <time class="dt-published" datetime="2023-04-10T15:00:00-05:00" itemprop="datePublished">Apr 10, 2023
+      </time></p>
+  </header>
+
+  <div class="post-content e-content" itemprop="articleBody">
+    <p>Last week, Patrick walked us through some high-level considerations to take into account when <a href="https://metricloop.com/blog/building-a-calendar-for-a-web-app-without-reinventing-the-wheel">building a calendar</a>. So this week, let’s take a stab at implementing a calendar with Vue.js. Because there is so much that goes into building a calendar, we’ll focus our efforts this week on creating a simple Vue component that can display a month of dates organized by the days of the week, toggle between different months, and show us what the current date is. Basically something like this:</p>
+
+<p><img src="/assets/images/posts/vue-calendar-1.png" alt="vue-calendar" /></p>
+
+<h2 id="big-picture">Big Picture</h2>
+<p>Before we dive into the code, let’s take a second to figure out what we’ll need to do in order to build a working calendar. First, we’ll need to figure out what the current date is, so we can initialize all of the other data. Then, we’ll need to use the current date to figure out what the current month is, how many days it has, what the current year is, and the weekday that the first day of the month fell on. Next, we’ll need a way to store our initial date values, so we can correctly mark our current date. Finally, we’ll need a way to increment and decrement the month and have all of our data adjust to reflect the new context. Our checklist for development would look something like this:</p>
+
+<ol>
+  <li>Find the current date</li>
+  <li>Find the current month and year</li>
+  <li>Determine the number of days in the month and the weekday that the first day of the month fell on</li>
+  <li>Store the initial info for reference later</li>
+  <li>Increment and decrement our month to change context
+Somewhere out there, a project manager just <a href="https://youtu.be/OfUV-F9jFro?t=1m31s">got their wings</a>.</li>
+</ol>
+
+<h2 id="set-up">Set Up</h2>
+<p>Since this is a JavaScript project that deals with dates, we’ll be making heavy use of the fantastic <a href="http://momentjs.com/">Moment.js</a> library. You can add it to your project with NPM by running <code class="language-plaintext highlighter-rouge">npm install moment</code>. Apart from that, we’ll just be using a simple Vue component, called <code class="language-plaintext highlighter-rouge">calendar.vue</code>, that you can add to any project you like.</p>
+
+<h2 id="the-calendar">The Calendar</h2>
+<h3 id="task-1">Task 1</h3>
+<p>Let’s start this component by taking a look at our <code class="language-plaintext highlighter-rouge">&lt;script&gt;</code> section within our <code class="language-plaintext highlighter-rouge">calendar.vue</code> file. At the top, right before our <code class="language-plaintext highlighter-rouge">export default</code>, let’s <code class="language-plaintext highlighter-rouge">import</code> Moment.js so we can use it in our component. Moving on to our <code class="language-plaintext highlighter-rouge">export default</code>, let’s setup our component’s <code class="language-plaintext highlighter-rouge">data</code>. Based on the requirements we outlined, we’ll need something to store our initial date, the changing date context, and the days of the week. Putting that together, we’ll end up with this:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>data(){
+    return{
+        today: moment(),
+        dateContext: moment(),
+        days: ['S', 'M', 'T', 'W', 'T', 'F', 'S']
+    }
+},
+</code></pre></div></div>
+<p>As you can see, we’re using <code class="language-plaintext highlighter-rouge">moment()</code> to set both <code class="language-plaintext highlighter-rouge">today</code> and <code class="language-plaintext highlighter-rouge">dateContext</code> to the current moment - pun very intended - and then we just have an array of <code class="language-plaintext highlighter-rouge">days</code> that will make our HTML a bit easier to read. This takes care of our first task, and when you check the component out in your Vue DevTools you’ll see that everything is setup correctly.</p>
+<h3 id="task-2">Task 2</h3>
+<p>Now, let’s find the current month and year to take care of our second task. From this point on, we’ll be dealing with computed properties. So, let’s set one up for <code class="language-plaintext highlighter-rouge">month</code> and another for <code class="language-plaintext highlighter-rouge">year</code>.</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>computed: {
+    year: function () {
+
+    },
+    month: function () {
+
+    }
+}
+</code></pre></div></div>
+<p>Now we can use Moment.js to format our <code class="language-plaintext highlighter-rouge">dateContext</code> to give us the results we want.</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>computed: {
+    year: function () {
+        var t = this;
+        return t.dateContext.format('Y');
+    },
+    month: function () {
+        var t = this;
+        return t.dateContext.format('MMMM');
+    }
+}
+</code></pre></div></div>
+<p>If you check your Vue DevTools now, you’ll see that our computed properties are displaying the year and month for our <code class="language-plaintext highlighter-rouge">dateContext</code>. With task 2 taken care of, let’s move on to number 3.</p>
+<h3 id="task-3">Task 3</h3>
+<p>For task 3, we’ll continue to make use of our computed properties, so let’s set up two properties called <code class="language-plaintext highlighter-rouge">daysInMonth</code>, <code class="language-plaintext highlighter-rouge">currentDate</code> and <code class="language-plaintext highlighter-rouge">firstDayOfMonth</code>.</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>computed: {
+    //Previous Code Above
+    daysInMonth: function () {
+
+    },
+    currentDate: function () {
+
+    },
+    firstDayOfMonth: function () {
+
+    }
+}
+</code></pre></div></div>
+<p>Once again, with Moment’s help this will be pretty easy. For <code class="language-plaintext highlighter-rouge">daysInMonth</code> Moment has a method called <code class="language-plaintext highlighter-rouge">daysInMonth()</code> that we can use. With that taken care of, let’s break down <code class="language-plaintext highlighter-rouge">currentDate</code> and <code class="language-plaintext highlighter-rouge">firstDayOfMonth</code>. We’ll set up <code class="language-plaintext highlighter-rouge">currentDate</code> so it give us the actual integer date for our <code class="language-plaintext highlighter-rouge">dateContext</code>. Then we’ll leverage this inside of <code class="language-plaintext highlighter-rouge">firstDayOfMonth</code> to find when the first day of the month was and determine its weekday.</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>computed: {
+    //Previous Code Above
+    daysInMonth: function () {
+        var t = this;
+        return t.dateContext.daysInMonth();
+    },
+    currentDate: function () {
+        var t = this;
+        return t.dateContext.get('date');
+    },
+    firstDayOfMonth: function () {
+        var t = this;
+        var firstDay = moment(t.dateContext).subtract((t.currentDate - 1), 'days');
+        return firstDay.weekday();
+    }
+}
+</code></pre></div></div>
+<p>Look how simple Moment.js makes this! <code class="language-plaintext highlighter-rouge">dayInMonth</code> and <code class="language-plaintext highlighter-rouge">currentDate</code> are taken care of for us by Moment, so we can focus our attention on parsing out <code class="language-plaintext highlighter-rouge">firstDayOfMonth</code>. Inside, we have a variable called <code class="language-plaintext highlighter-rouge">firstDay</code> that subtracts the <code class="language-plaintext highlighter-rouge">currentDate</code>’s number of days, minus 1, from the <code class="language-plaintext highlighter-rouge">dateContext</code>. We subtract an extra day from the <code class="language-plaintext highlighter-rouge">currentDate</code> because it includes the dateContext and we want to know the days preceding dateContext. Finally, Moment has a method that finds the weekday for us, so we’ll <code class="language-plaintext highlighter-rouge">return</code> that to get the first day of the month.</p>
+<h3 id="task-4">Task 4</h3>
+<p>If you’ve been paying attention, you’ll notice that we’ve been using <code class="language-plaintext highlighter-rouge">dateContext</code> instead of <code class="language-plaintext highlighter-rouge">today</code> in our computed properties. We want to keep them separate because we’ll be changing the <code class="language-plaintext highlighter-rouge">dateContext</code> to update our computed properties when we increment/decrement the month, and if we don’t have <code class="language-plaintext highlighter-rouge">today</code> then we lose our initial date, which we need to display the current date to the user. So let’s use some more computed properties to persist our initial date.</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>computed: {
+    //Previous Code Above
+   initialDate: function () {
+        var t = this;
+        return t.today.get('date');
+    },
+    initialMonth: function () {
+        var t = this;
+        return t.today.format('MMMM');
+    },
+    initialYear: function () {
+        var t = this;
+        return t.today.format('Y');
+    }
+}
+</code></pre></div></div>
+<p>Here we’re just using Moment to format <code class="language-plaintext highlighter-rouge">today</code> into its date, month, and year. We’ll use these later in the template to highlight today’s date.</p>
+<h3 id="task-5">Task 5</h3>
+<p>Finally, we’re ready to increment and decrement the month to change our calendar’s context. Once again, Moment makes this trivially easy for us to do.</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>methods: {
+    addMonth: function () {
+        var t = this;
+        t.dateContext = moment(t.dateContext).add(1, 'month');
+    },
+    subtractMonth: function () {
+        var t = this;
+        t.dateContext = moment(t.dateContext).subtract(1, 'month');
+    }
+}
+</code></pre></div></div>
+<p>As you can see, in both methods we are overwriting the current <code class="language-plaintext highlighter-rouge">dateContext</code> with an appropriate addition or subtraction based on the <code class="language-plaintext highlighter-rouge">dateContext</code>. And since we made use of <code class="language-plaintext highlighter-rouge">dateContext</code> in our computed properties, everything will update to reflect the new month.</p>
+<h3 id="the-template">The Template</h3>
+<p>With our data, computed properties, and methods finished, we can now put them to good use in our template.</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>&lt;template&gt;
+    &lt;div class="calendar"&gt;
+        &lt;div class="calendar-header"&gt;
+            &lt;i class="fa fa-fw fa-chevron-left" @click="subtractMonth"&gt;&lt;/i&gt;
+            &lt;h4&gt;&lt;/h4&gt;
+            &lt;i class="fa fa-fw fa-chevron-right" @click="addMonth"&gt;&lt;/i&gt;
+        &lt;/div&gt;
+        &lt;ul class="weekdays"&gt;
+            &lt;li v-for="day in days"&gt;&lt;/li&gt;
+        &lt;/ul&gt;
+        &lt;ul class="dates"&gt;
+            &lt;li v-for="blank in firstDayOfMonth"&gt; &lt;/li&gt;
+            &lt;li v-for="date in daysInMonth"
+                :class="{'current-day': date == initialDate &amp;&amp; month == initialMonth &amp;&amp; year == initialYear}"&gt;;
+                &lt;span&gt;&lt;/span&gt;
+           &lt;/li&gt;
+        &lt;/ul&gt;
+    &lt;/div&gt;
+&lt;/template&gt;
+</code></pre></div></div>
+<p>This might look like a lot, but let’s break it down step-by-step. At the top, we have our <code class="language-plaintext highlighter-rouge">calendar-header</code>. Here we have our month incrementer and decrementer with the month and year in between them. Next we have weekdays, where we’re using a <code class="language-plaintext highlighter-rouge">v-for</code> to loop through all of the days in our <code class="language-plaintext highlighter-rouge">days</code> array. This isn’t strictly necessary - you could hardcode it in - but I find that it keeps the template from becoming overwhelming. Finally, we have dates - the meat and potatoes of our calendar. Within the ul we have two different <code class="language-plaintext highlighter-rouge">v-fors</code>. The first loops through the firstDayOfMonth so we can get the spacing correct for the actual dates. Then we have another <code class="language-plaintext highlighter-rouge">v-for</code> that loops through the <code class="language-plaintext highlighter-rouge">daysInMonth</code> to actually display the dates on the page. The last thing to note is our dynamic class <code class="language-plaintext highlighter-rouge">current-day</code>. Here we’re using the initial dates to ensure that we only add this class when it is the correct day.</p>
+<h3 id="conclusion">Conclusion</h3>
+<p>There you have it! Your very own Vue.js calendar. Now there are certainly lots of plugins and libraries out there that could have done this for us. But with your own custom component you have the flexibility to add in as many additional features as you need, without carrying the overhead of features you’ll never use. Until next time, happy coding!</p>
+
+  </div><a class="u-url" href="/2023/04/10/building-calendar-with-vue/" hidden></a>
+</article>
+
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/"></data>
+
+  <div class="wrapper">
+
+    <div class="footer-col-wrapper">
+
+      <div class="footer-col footer-col-2">
+        <img src="" style="max-width: 75px; border-radius: 100%">
+      </div>
+
+      <div class="footer-col footer-col-1"><ul class="social-media-list"><li><a href="mailto:hardev0a0@gmail.com"><span class="username">hardev0a0@gmail.com</span></a></li></ul>
+</div>
+
+      <div class="footer-col footer-col-3">
+        <p>Lead Software Engineer</p>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+</body>
+
+</html>

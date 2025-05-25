@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1"><!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>laravel-custom-validation | Harry Singh</title>
+<meta name="generator" content="Jekyll v3.10.0" />
+<meta property="og:title" content="laravel-custom-validation" />
+<meta name="author" content="Harry Singh" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="Lead Software Engineer" />
+<meta property="og:description" content="Lead Software Engineer" />
+<link rel="canonical" href="https://harrysingh.xyz/projects/laravel-custom-validation/" />
+<meta property="og:url" content="https://harrysingh.xyz/projects/laravel-custom-validation/" />
+<meta property="og:site_name" content="Harry Singh" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2023-12-03T11:06:12-06:00" />
+<meta name="twitter:card" content="summary" />
+<meta property="twitter:title" content="laravel-custom-validation" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Harry Singh"},"dateModified":"2023-12-03T11:06:12-06:00","datePublished":"2023-12-03T11:06:12-06:00","description":"Lead Software Engineer","headline":"laravel-custom-validation","mainEntityOfPage":{"@type":"WebPage","@id":"https://harrysingh.xyz/projects/laravel-custom-validation/"},"url":"https://harrysingh.xyz/projects/laravel-custom-validation/"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/assets/main.css"><link type="application/atom+xml" rel="alternate" href="https://harrysingh.xyz/feed.xml" title="Harry Singh" /></head>
+<body><header class="site-header" role="banner">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/">Harry Singh</a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger"><a class="page-link" href="/about/">About</a></div>
+      </nav></div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title p-name" itemprop="name headline">laravel-custom-validation</h1>
+    <p class="post-meta">
+      <time class="dt-published" datetime="2023-12-03T11:06:12-06:00" itemprop="datePublished">Dec 3, 2023
+      </time></p>
+  </header>
+
+  <div class="post-content e-content" itemprop="articleBody">
+    
+
+<div class="project-card f-row">
+  <div>
+    <div class="project-card-header">
+      <h1 class="project-card-title">
+        <a target="_blank" rel="noopener noreferrer" 
+          href="https://github.com/badass-commits/laravel-custom-validation">
+          
+          <svg class="svg-icon v-align-middle" style="fill:#586069">
+            <use xlink:href="/assets/minima-social-icons.svg#github"></use>
+          </svg>
+          
+          laravel-custom-validation
+        </a>
+      </h1>
+    </div>
+    <div class="project-card-description">✅ Laravel project demonstrating how to create and use custom validation rules.</div>
+  </div>
+  <div class="github-info f-col">
+    
+    <div>
+      <span class="repo-language-color"
+        style="background-color:#4F5D95"></span>
+      <span class="mr-3" itemprop="programmingLanguage">PHP</span>
+    </div>
+    
+    
+    
+  </div>
+</div>
+
+<hr class="break" />
+
+<h1 id="enhancing-laravel-validation-custom-rules-for-real-world-needs">Enhancing Laravel Validation: Custom Rules for Real-World Needs</h1>
+
+<p>In many of my Laravel projects, I often encounter scenarios where the built-in validation rules don’t quite meet the specific requirements of the application. Whether it’s validating a national ID format, ensuring a mobile number has exactly 11 digits, or restricting file uploads to certain MIME types, these unique cases call for custom solutions.</p>
+
+<p>To address these needs, I developed a set of custom validation rules tailored for Laravel applications. You can find the repository here:<br />
+👉 <a href="https://github.com/badass-commits/laravel-custom-validation">github.com/badass-commits/laravel-custom-validation</a></p>
+
+<h2 id="why-custom-validation-rules">Why Custom Validation Rules?</h2>
+
+<p>Laravel’s default validation rules are great, but sometimes you need more specific logic. For example:</p>
+
+<ul>
+  <li><strong>National ID Validation</strong>: Ensures a provided NID matches a given format or checksum.</li>
+  <li><strong>Mobile Number Validation</strong>: Checks that a number has exactly 11 digits, possibly with specific starting digits.</li>
+  <li><strong>Floating-Point Validation</strong>: Validates a float with precision or range constraints.</li>
+  <li><strong>MIME Restrictions</strong>: Accepts or rejects specific MIME types for uploads.</li>
+</ul>
+
+<p>By creating custom rule classes, I can cleanly encapsulate this logic and reuse it wherever I need.</p>
+
+<h2 id="whats-included-in-the-package">What’s Included in the Package?</h2>
+
+<p>The repository currently includes:</p>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">FloatNumberCustomValidation</code></li>
+  <li><code class="language-plaintext highlighter-rouge">MimeExclusion</code></li>
+  <li><code class="language-plaintext highlighter-rouge">MimeInclusion</code></li>
+  <li><code class="language-plaintext highlighter-rouge">MobileNumber11DigitCustomValidation</code></li>
+  <li><code class="language-plaintext highlighter-rouge">NidSmartCardCustomValidation</code></li>
+</ul>
+
+<p>Each class implements Laravel’s validation rule interface, and can be used like any other validation rule in a controller or FormRequest.</p>
+
+<h2 id="how-to-use">How to Use</h2>
+
+<p>Let’s say you want to validate that a mobile number is 11 digits long.</p>
+
+<h3 id="step-1--import-the-rule">Step 1 – Import the Rule</h3>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>use App\Rules\MobileNumber11DigitCustomValidation;
+</code></pre></div></div>
+
+<h3 id="step-2--apply-in-validation">Step 2 – Apply in Validation</h3>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$request-&gt;validate([
+    'mobile_number' =&gt; ['required', new MobileNumber11DigitCustomValidation()],
+]);
+</code></pre></div></div>
+
+<h2 id="getting-started">Getting Started</h2>
+
+<ol>
+  <li>Clone the repository:
+    <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>git clone https://github.com/badass-commits/laravel-custom-validation.git
+</code></pre></div>    </div>
+  </li>
+  <li>Copy the rule classes you need into your Laravel app under app/Rules/.</li>
+  <li>Use the rules in your validation logic as shown above.</li>
+</ol>
+
+<h2 id="final-thoughts">Final Thoughts</h2>
+<p>Custom validation rules might seem like a small thing, but they really help keep your logic clean and modular — especially in complex or domain-specific applications. If you find this useful or have ideas for additional rules, feel free to fork the repo or open a PR. Always happy to improve this for future use.</p>
+
+
+  </div><a class="u-url" href="/projects/laravel-custom-validation/" hidden></a>
+</article>
+
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/"></data>
+
+  <div class="wrapper">
+
+    <div class="footer-col-wrapper">
+
+      <div class="footer-col footer-col-2">
+        <img src="" style="max-width: 75px; border-radius: 100%">
+      </div>
+
+      <div class="footer-col footer-col-1"><ul class="social-media-list"><li><a href="mailto:hardev0a0@gmail.com"><span class="username">hardev0a0@gmail.com</span></a></li></ul>
+</div>
+
+      <div class="footer-col footer-col-3">
+        <p>Lead Software Engineer</p>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+</body>
+
+</html>

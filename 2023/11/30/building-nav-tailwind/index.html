@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1"><!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>Building a nav with Tailwind CSS | Harry Singh</title>
+<meta name="generator" content="Jekyll v3.10.0" />
+<meta property="og:title" content="Building a nav with Tailwind CSS" />
+<meta name="author" content="Harry Singh" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="As I’ve watch the Tailwind community explode over the last few weeks, one of the most frequent questions I’ve seen is: “how do I build XYZ component with Tailwind?” It’s a legitimate question, but it kind of misses the point." />
+<meta property="og:description" content="As I’ve watch the Tailwind community explode over the last few weeks, one of the most frequent questions I’ve seen is: “how do I build XYZ component with Tailwind?” It’s a legitimate question, but it kind of misses the point." />
+<link rel="canonical" href="https://harrysingh.xyz/2023/11/30/building-nav-tailwind/" />
+<meta property="og:url" content="https://harrysingh.xyz/2023/11/30/building-nav-tailwind/" />
+<meta property="og:site_name" content="Harry Singh" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2023-11-30T14:00:00-06:00" />
+<meta name="twitter:card" content="summary" />
+<meta property="twitter:title" content="Building a nav with Tailwind CSS" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Harry Singh"},"dateModified":"2023-11-30T14:00:00-06:00","datePublished":"2023-11-30T14:00:00-06:00","description":"As I’ve watch the Tailwind community explode over the last few weeks, one of the most frequent questions I’ve seen is: “how do I build XYZ component with Tailwind?” It’s a legitimate question, but it kind of misses the point.","headline":"Building a nav with Tailwind CSS","mainEntityOfPage":{"@type":"WebPage","@id":"https://harrysingh.xyz/2023/11/30/building-nav-tailwind/"},"url":"https://harrysingh.xyz/2023/11/30/building-nav-tailwind/"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/assets/main.css"><link type="application/atom+xml" rel="alternate" href="https://harrysingh.xyz/feed.xml" title="Harry Singh" /></head>
+<body><header class="site-header" role="banner">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/">Harry Singh</a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger"><a class="page-link" href="/about/">About</a></div>
+      </nav></div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title p-name" itemprop="name headline">Building a nav with Tailwind CSS</h1>
+    <p class="post-meta">
+      <time class="dt-published" datetime="2023-11-30T14:00:00-06:00" itemprop="datePublished">Nov 30, 2023
+      </time></p>
+  </header>
+
+  <div class="post-content e-content" itemprop="articleBody">
+    <p>As I’ve watch the <a href="https://twitter.com/tailwindcss">Tailwind community</a> explode over the last few weeks, one of the most frequent questions I’ve seen is: “how do I build XYZ component with Tailwind?” It’s a legitimate question, but it kind of misses the point.</p>
+
+<p>Tailwind isn’t a collection of component recipies that we snap together to form an interface. Instead, it’s more like the underlying ingredients that we can then use to create any component we want.</p>
+
+<p>I’ll admit that it takes some time getting used to that idea. But, a little practice can go a long way towards helping us wrap our minds around it. So, let’s jump right in and see how we can use Tailwind to build a nav bar for ourselves.</p>
+
+<h3 id="the-html">The HTML</h3>
+<p>Before we do anything with styling, we need some HTML! Let’s start with a simple little <code class="language-plaintext highlighter-rouge">index.html</code> file.
+<img src="/assets/images/posts/tailwind-nav-1.png" alt="tailwind-nav-1" />
+To get up and running quickly with Tailwind, let’s just add it via its CDN.
+<img src="/assets/images/posts/tailwind-nav-2.png" alt="tailwind-nav-2" />
+Now, let’s create a simple little nav bar for us to style. We’ll start with a <code class="language-plaintext highlighter-rouge">nav</code> tag, and add two <code class="language-plaintext highlighter-rouge">div</code>s inside for the left and right side of our nav. Inside of the <code class="language-plaintext highlighter-rouge">div</code>s, we can add some <code class="language-plaintext highlighter-rouge">a</code> tags for our nav links.
+<img src="/assets/images/posts/tailwind-nav-3.png" alt="tailwind-nav-3" />
+At the end of all this, we finally have some HTML on our page for us to style.
+<img src="/assets/images/posts/tailwind-nav-4.png" alt="tailwind-nav-4" /></p>
+
+<h3 id="flex-that-nav">Flex That Nav</h3>
+<p>With our HTML ready to go, we can start adding some styles. Let’s start with our positioning. On our <code class="language-plaintext highlighter-rouge">nav</code> tag, we can add <code class="language-plaintext highlighter-rouge">.flex</code> and <code class="language-plaintext highlighter-rouge">.justify-between</code> to get our <code class="language-plaintext highlighter-rouge">div</code>s into the right place.
+<img src="/assets/images/posts/tailwind-nav-5.png" alt="tailwind-nav-5" />
+<img src="/assets/images/posts/tailwind-nav-6.png" alt="tailwind-nav-6" />
+This looks pretty good on a laptop, but what about mobile?</p>
+
+<p>Hmm, it needs a little work. With Tailwind, we can easily make our styles responsive with a mobile-first approach and some very handy responsive prefixes. For our existing classes, we can add the <code class="language-plaintext highlighter-rouge">sm</code> prefix to <code class="language-plaintext highlighter-rouge">.justify-between</code> like so <code class="language-plaintext highlighter-rouge">.sm:justify-between</code>. Here, we’re telling the nav to use <code class="language-plaintext highlighter-rouge">.justify-between</code> once we’ve reached the <code class="language-plaintext highlighter-rouge">sm</code> breakpoint.</p>
+
+<p>Now, we can add <code class="language-plaintext highlighter-rouge">.flex-col</code>, <code class="language-plaintext highlighter-rouge">.text-center</code>, <code class="language-plaintext highlighter-rouge">.sm:flex-row</code>, and <code class="language-plaintext highlighter-rouge">.sm:text-left</code> to our nav to round out our code. And volia! We have a responsive nav now.
+<img src="/assets/images/posts/tailwind-nav-7.png" alt="tailwind-nav-7" />
+<img src="/assets/images/posts/tailwind-nav-8.png" alt="tailwind-nav-8" /></p>
+
+<h3 id="styles-the-word">Style’s The Word</h3>
+<p>With our responsiveness down, let’s make our nav links look a little nicer. We can add <code class="language-plaintext highlighter-rouge">.text-2xl</code> to our home link to make it stand out, and <code class="language-plaintext highlighter-rouge">.text-lg</code> to our other links. We can also get rid of the default underlines by adding <code class="language-plaintext highlighter-rouge">.no-underline</code> to all of the links. To make them look even less like a default link, we can add <code class="language-plaintext highlighter-rouge">.text-grey-darkest</code> to each of the links and add <code class="language-plaintext highlighter-rouge">.font-sans</code> to our nav.</p>
+
+<p>Altogether, we now have some pretty good looking nav links.
+<img src="/assets/images/posts/tailwind-nav-9.png" alt="tailwind-nav-9" />
+Now, these wouldn’t really be good nav links if they didn’t have a hover effect, right? Tailwind makes this super easy too - just add a <code class="language-plaintext highlighter-rouge">hover:</code> prefix to any class, and that class will be applied on hover. So, for our nav links we can add <code class="language-plaintext highlighter-rouge">.hover:text-blue-dark</code> to add a hover effect and a pop of color.
+<img src="/assets/images/posts/tailwind-nav-10.png" alt="tailwind-nav-10" />
+<img src="/assets/images/posts/tailwind-nav-11.png" alt="tailwind-nav-11" /></p>
+
+<h3 id="spread-it-out">Spread It Out</h3>
+<p>Our nav is starting to feel a little cramped now, so let’s add some spacing to give it some room. For each of the links on the right hand side, let’s add <code class="language-plaintext highlighter-rouge">.ml-2</code> to spread them out a bit. On our home link’s parent <code class="language-plaintext highlighter-rouge">div</code>, we can add a <code class="language-plaintext highlighter-rouge">.mb-2</code> and a <code class="language-plaintext highlighter-rouge">.sm:mb-0</code> to add some spacing on mobile. Finally, to get everything away from the edges, we can add <code class="language-plaintext highlighter-rouge">.py-4</code> and <code class="language-plaintext highlighter-rouge">.px-6</code> to our <code class="language-plaintext highlighter-rouge">nav</code> tag.
+<img src="/assets/images/posts/tailwind-nav-12.png" alt="tailwind-nav-12" />
+<img src="/assets/images/posts/tailwind-nav-13.png" alt="tailwind-nav-13" />
+<img src="/assets/images/posts/tailwind-nav-14.png" alt="tailwind-nav-14" /></p>
+
+<h3 id="final-touches">Final Touches</h3>
+<p>With our links looking good and our positioning all squared away, it’s time for us to take this nav to the next level. To start, we’ll add <code class="language-plaintext highlighter-rouge">.bg-white</code> and <code class="language-plaintext highlighter-rouge">.shadow</code> to the <code class="language-plaintext highlighter-rouge">nav</code> tag. Now, it’s clear that our right side links are a little too high, so let’s also add <code class="language-plaintext highlighter-rouge">.sm:items-baseline</code> to the <code class="language-plaintext highlighter-rouge">nav</code> tag to bring them back down. Bada bing, bada boom we’ve got ourselves a nav bar.
+<img src="/assets/images/posts/tailwind-nav-15.png" alt="tailwind-nav-15" />
+<img src="/assets/images/posts/tailwind-nav-16.png" alt="tailwind-nav-16" />
+<img src="/assets/images/posts/tailwind-nav-17.png" alt="tailwind-nav-17" /></p>
+
+  </div><a class="u-url" href="/2023/11/30/building-nav-tailwind/" hidden></a>
+</article>
+
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/"></data>
+
+  <div class="wrapper">
+
+    <div class="footer-col-wrapper">
+
+      <div class="footer-col footer-col-2">
+        <img src="" style="max-width: 75px; border-radius: 100%">
+      </div>
+
+      <div class="footer-col footer-col-1"><ul class="social-media-list"><li><a href="mailto:hardev0a0@gmail.com"><span class="username">hardev0a0@gmail.com</span></a></li></ul>
+</div>
+
+      <div class="footer-col footer-col-3">
+        <p>Lead Software Engineer</p>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+</body>
+
+</html>

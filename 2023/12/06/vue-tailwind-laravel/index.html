@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1"><!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>How to build a Vue.js component with Tailwind in a Laravel project | Harry Singh</title>
+<meta name="generator" content="Jekyll v3.10.0" />
+<meta property="og:title" content="How to build a Vue.js component with Tailwind in a Laravel project" />
+<meta name="author" content="Harry Singh" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="Let’s take our experiments installing Tailwind CSS and building a nav with it to the next level. Today, we’re going to be building a simple todo app with Vue.js, Laravel, and Tailwind. For the sake of time, we’re not going to persist any data. But fear not, that will certainly make an excellent part two." />
+<meta property="og:description" content="Let’s take our experiments installing Tailwind CSS and building a nav with it to the next level. Today, we’re going to be building a simple todo app with Vue.js, Laravel, and Tailwind. For the sake of time, we’re not going to persist any data. But fear not, that will certainly make an excellent part two." />
+<link rel="canonical" href="https://harrysingh.xyz/2023/12/06/vue-tailwind-laravel/" />
+<meta property="og:url" content="https://harrysingh.xyz/2023/12/06/vue-tailwind-laravel/" />
+<meta property="og:site_name" content="Harry Singh" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2023-12-06T14:00:00-06:00" />
+<meta name="twitter:card" content="summary" />
+<meta property="twitter:title" content="How to build a Vue.js component with Tailwind in a Laravel project" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Harry Singh"},"dateModified":"2023-12-06T14:00:00-06:00","datePublished":"2023-12-06T14:00:00-06:00","description":"Let’s take our experiments installing Tailwind CSS and building a nav with it to the next level. Today, we’re going to be building a simple todo app with Vue.js, Laravel, and Tailwind. For the sake of time, we’re not going to persist any data. But fear not, that will certainly make an excellent part two.","headline":"How to build a Vue.js component with Tailwind in a Laravel project","mainEntityOfPage":{"@type":"WebPage","@id":"https://harrysingh.xyz/2023/12/06/vue-tailwind-laravel/"},"url":"https://harrysingh.xyz/2023/12/06/vue-tailwind-laravel/"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/assets/main.css"><link type="application/atom+xml" rel="alternate" href="https://harrysingh.xyz/feed.xml" title="Harry Singh" /></head>
+<body><header class="site-header" role="banner">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/">Harry Singh</a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger"><a class="page-link" href="/about/">About</a></div>
+      </nav></div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title p-name" itemprop="name headline">How to build a Vue.js component with Tailwind in a Laravel project</h1>
+    <p class="post-meta">
+      <time class="dt-published" datetime="2023-12-06T14:00:00-06:00" itemprop="datePublished">Dec 6, 2023
+      </time></p>
+  </header>
+
+  <div class="post-content e-content" itemprop="articleBody">
+    <p>Let’s take our experiments installing Tailwind CSS and building a nav with it to the next level. Today, we’re going to be building a simple todo app with Vue.js, Laravel, and Tailwind. For the sake of time, we’re not going to persist any data. But fear not, that will certainly make an excellent part two.</p>
+
+<h3 id="set-up">Set Up</h3>
+<p>To get started, I’m going to use the Laravel CLI to scaffold a project by running <code class="language-plaintext highlighter-rouge">laravel new &lt;insert-your-project-name&gt;</code> inside the directory where we want to add our project. The Laravel CLI will take care of all the installation that we need for Laravel and Vue.</p>
+
+<p>For this simple project, let’s just use the default <code class="language-plaintext highlighter-rouge">welcome.blade.php</code> file to build the app. We’ll need to configure this template so our Vue code can hook in and work correctly. To start, add in the following <code class="language-plaintext highlighter-rouge">meta</code> tag to our <code class="language-plaintext highlighter-rouge">head</code> right below the other <code class="language-plaintext highlighter-rouge">meta</code> tags.</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>&lt;meta name="csrf-token" content=""&gt;
+</code></pre></div></div>
+<p>Now, we can delete the default styles and font import and move onto the body. Inside our <code class="language-plaintext highlighter-rouge">body</code> tag, we can see a bunch of generated code. Go ahead and replace it with the following:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>&lt;div id="app"&gt;
+    &lt;example-component&gt;&lt;/example-component&gt;
+&lt;/div&gt;
+
+&lt;!-- Scripts --&gt;
+&lt;script src=""&gt;&lt;/script&gt;
+</code></pre></div></div>
+<p>We can now see that we’ve got everything working correctly by checking out our screen.
+<img src="/assets/images/posts/vue-tailwind-laravel-1.png" alt="vue-tailwind-laravel-1" />
+As you can see, the example component is rendering correctly and we’re good to go. If you feel like you’ve missed something along the way, feel free to check out the GitHub repo for this project and follow along with my commits.</p>
+
+<p>Now to set up Tailwind, I’m going to assume that you’ve worked through my earlier article that explains how to set up Tailwind in a Laravel project. After we’ve done all that, let’s add one more line to our <code class="language-plaintext highlighter-rouge">welcome.blade.php</code> so we can use our Tailwind styles. In the head below the title tag, add this import: <link href="" rel="stylesheet" />.</p>
+
+<p>Finally, we’re ready to start developing!</p>
+
+<h3 id="our-vuejs-component">Our Vue.js Component</h3>
+<p>Let’s start our Vue development by taking out the scaffolding and adding our own components. In <code class="language-plaintext highlighter-rouge">resources/assets/js/components</code>, we can delete the <code class="language-plaintext highlighter-rouge">ExampleComponent.vue</code> and add our own file called <code class="language-plaintext highlighter-rouge">todo.vue</code>. Now, inside of <code class="language-plaintext highlighter-rouge">resources/assets/js/app.js</code> we can update the component import to reference our todo component instead of the example so it looks like this:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Vue.component('todo-component', require('./components/todo.vue'));
+</code></pre></div></div>
+<p>In our <code class="language-plaintext highlighter-rouge">welcome.blade.php</code>, we can update the Vue component to be our todo component like so:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>&lt;todo-component&gt;&lt;/todo-component&gt;
+</code></pre></div></div>
+<p>To see this in the browser, we’ll need to run our Laravel Mix. If you’re following along, I recommend using <code class="language-plaintext highlighter-rouge">npm run watch</code> so your code changes automatically get compiled.</p>
+
+<p>We’re going to try and keep this Vue component pretty simple, so we can focus on styling it with Tailwind. For our template, let’s use something that looks like this:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>&lt;template&gt;
+    &lt;div&gt;
+        &lt;div&gt;
+            &lt;h1&gt;Todo List&lt;/h1&gt;
+            &lt;div&gt;
+                &lt;input v-model="newTodo" placeholder="Add Todo"&gt;
+                &lt;button @click="add" :disabled="newTodo.length === 0"&gt;Add&lt;/button&gt;
+            &lt;/div&gt;
+        &lt;/div&gt;
+        &lt;div&gt;
+            &lt;div v-for="(todo, index) in todos" :key="todo.id"&gt;
+                &lt;p&gt;&lt;/p&gt;
+                &lt;button @click="updateStatus(todo)" v-text="todo.finished ? 'Not Done' : 'Done'"&gt;&lt;/button&gt;
+                &lt;button @click="remove(index)"&gt;Remove&lt;/button&gt;
+            &lt;/div&gt;
+        &lt;/div&gt;
+    &lt;/div&gt;
+&lt;/template&gt;
+</code></pre></div></div>
+<p>As you can see, this is a pretty simple component. We have a wrapper <code class="language-plaintext highlighter-rouge">div</code> like all Vue components, and then two child <code class="language-plaintext highlighter-rouge">div</code>s. In the first one we have our header, which includes our new todo <code class="language-plaintext highlighter-rouge">input</code>. We’ve bound that <code class="language-plaintext highlighter-rouge">input</code> to a <code class="language-plaintext highlighter-rouge">v-model</code> called <code class="language-plaintext highlighter-rouge">newTodo</code> and we’ve added a method to our <code class="language-plaintext highlighter-rouge">button</code> called <code class="language-plaintext highlighter-rouge">add</code> to submit a new todo. We’re also disabling the button when there’s no text in the <code class="language-plaintext highlighter-rouge">input</code> so we don’t add empty todos.</p>
+
+<p>In our bottom div, we’re looping through each of the todos that we’ve added and we’re displaying it’s text data as well as two buttons. The first button let’s us mark a todo as finished or not finished, while our second button removes the todo altogether. Pretty straightforward, right?</p>
+
+<p>Moving along, here’s the rest of our Vue component:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>&lt;script&gt;
+    export default{
+        data(){
+            return{
+                todos: [],
+                newTodo: '',
+                baseId: 1,
+            }
+        },
+        methods: {
+            add() {
+              const t = this;
+
+              let todo = {
+                id: t.baseId,
+                text: t.newTodo,
+                finished: false,
+              }
+
+              t.todos.push(todo);
+
+              t.newTodo = '';
+              t.baseId++;
+            },
+            updateStatus(todo) {
+              todo.finished = !todo.finished;
+            },
+            remove(index) {
+              const t = this;
+
+              t.todos.splice(index, 1);
+            }
+        }
+    }
+&lt;/script&gt;
+</code></pre></div></div>
+<p>Here we have the data that we’re using to manage our todos and the three methods that we saw were bound to our template. In our data, we have a todos array where we can store our todos; we have the newTodo that we bound to our <code class="language-plaintext highlighter-rouge">input</code>, and lastly, we have a baseId that we’re using to give each of our todos a fake “unique” id so Vue can keep track of them in the <code class="language-plaintext highlighter-rouge">v-for</code> loop.</p>
+
+<p>In our methods, we have <code class="language-plaintext highlighter-rouge">add()</code> which instantiates a new todo with the data from newTodo and the baseId, and pushes it into our todo array before restoring the state of our input to empty and incrementing our baseId. Then we have <code class="language-plaintext highlighter-rouge">updateStatus()</code> that just flips the finished state of the passed in todo. Finally, we have <code class="language-plaintext highlighter-rouge">remove()</code> which accepts the index of a todo and splices it out of the todos array.</p>
+
+<p>Running <code class="language-plaintext highlighter-rouge">npm run prod</code>, we can see what our todo component looks like in the browser.
+<img src="/assets/images/posts/vue-tailwind-laravel-2.png" alt="vue-tailwind-laravel-2" />
+As we use our component, we can see that our todos are getting added in the wrong order. Whoops! In our <code class="language-plaintext highlighter-rouge">add()</code> method, let’s change the <code class="language-plaintext highlighter-rouge">.push()</code> to use <code class="language-plaintext highlighter-rouge">.unshift()</code> instead. Now, it’s working as intended.</p>
+
+<p>While the functionality is all there, it sure is tough to look at. Let’s get ready to make it much more user-friendly with Tailwind CSS.</p>
+
+<h3 id="looking-good-with-tailwind">Looking Good with Tailwind</h3>
+<p>Here comes the fun part, making our todo app look awesome with Tailwind. To start, let’s begin in <code class="language-plaintext highlighter-rouge">welcome.blade.php</code> and position our todo component in the middle of the page.</p>
+
+<p>On the <code class="language-plaintext highlighter-rouge">div</code> with the id of app, we can add the following. <code class="language-plaintext highlighter-rouge">class="h-screen flex items-center justify-center"</code>. As you can see, this puts our component right in the middle of the page. Let’s add a background color and a font family to introduce some basic styles. On that same <code class="language-plaintext highlighter-rouge">div</code> add the <code class="language-plaintext highlighter-rouge">.bg-teal-lightest</code> and <code class="language-plaintext highlighter-rouge">.font-sans</code> classes. Our page is starting to look better already!
+<img src="/assets/images/posts/vue-tailwind-laravel-3.png" alt="vue-tailwind-laravel-3" />
+Now, we can focus on styling our component. Let’s start with some basic styles so we can see what we’re working with. Inside our <code class="language-plaintext highlighter-rouge">todo.vue</code> file on the wrapper div, we can add <code class="language-plaintext highlighter-rouge">.bg-white</code>, <code class="language-plaintext highlighter-rouge">.rounded</code>, <code class="language-plaintext highlighter-rouge">.shadow</code>, and <code class="language-plaintext highlighter-rouge">.p-6</code> classes to give ourselves a nice looking card.
+<img src="/assets/images/posts/vue-tailwind-laravel-4.png" alt="vue-tailwind-laravel-4" />
+With that white background, we can see how that <code class="language-plaintext highlighter-rouge">div</code> sits on the page. So, let’s give it a better width with these classes: <code class="language-plaintext highlighter-rouge">.m-4</code>, <code class="language-plaintext highlighter-rouge">.w-full</code>, <code class="language-plaintext highlighter-rouge">.lg:w-3/4</code>, and <code class="language-plaintext highlighter-rouge">.lg:max-w-lg</code>. As you can see, on mobile we’re letting the card take up the full width of the screen, and once we hit our large breakpoint we let it grow until it hits 75% of the screen or our max-width.
+<img src="/assets/images/posts/vue-tailwind-laravel-5.png" alt="vue-tailwind-laravel-5" />
+Let’s take care of the todo list itself, starting with the header. For the header wrapper <code class="language-plaintext highlighter-rouge">div</code>, we can just add a little spacing to the bottom with <code class="language-plaintext highlighter-rouge">.mb-4</code> to separate it from the list items. Then on the h1 we can just add a <code class="language-plaintext highlighter-rouge">.text-grey-darkest</code> so it doesn’t look so intense.</p>
+
+<p>Now for the fun part, our new todo input. For its wrapper <code class="language-plaintext highlighter-rouge">div</code>, we’ll make it flex by adding the .flex class and give it some spacing from the h1 with a <code class="language-plaintext highlighter-rouge">.mt-4</code>. On the input and the button we’re going to add a whole bunch of classes like so:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>&lt;input class="shadow appearance-none border rounded w-full py-2 px-3 mr-4 text-grey-darker" v-model="newTodo" placeholder="Add Todo"&gt;
+&lt;button class="flex-no-shrink p-2 border-2 rounded text-teal border-teal hover:text-white hover:bg-teal" @click="add" :disabled="newTodo.length === 0"&gt;Add&lt;/button&gt;
+</code></pre></div></div>
+<p>These classes are all pretty straight forward, but the ones that might trip you up are <code class="language-plaintext highlighter-rouge">.appearance-none</code> on the input and <code class="language-plaintext highlighter-rouge">.flex-no-shrink</code> on the button. <code class="language-plaintext highlighter-rouge">.appearance-none</code> is a reset class that removes any browser styling from a given element, while <code class="language-plaintext highlighter-rouge">.flex-no-shrink</code> is a flex helper that sets <code class="language-plaintext highlighter-rouge">flex-shrink</code> to 0 and prevents the button text from wrapping on smaller viewports. Pretty useful, right? Now, we’ve got ourselves a nicely styled header.
+<img src="/assets/images/posts/vue-tailwind-laravel-6.png" alt="vue-tailwind-laravel-6" />
+Before we style the todo items, this new styling is making it apparent that we forgot an empty state to let the user know that they don’t have any todos. So, let’s add that and style it too.</p>
+
+<p>Inside of our second <code class="language-plaintext highlighter-rouge">div</code> group and right below the <code class="language-plaintext highlighter-rouge">v-for</code>, we can add this:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>&lt;div v-show="todos.length === 0"&gt;
+    &lt;p class="w-full text-center text-grey-dark"&gt;There are no todos&lt;/p&gt;
+&lt;/div&gt;
+</code></pre></div></div>
+<p>Now our user can see that there are no todos right off the bat.
+<img src="/assets/images/posts/vue-tailwind-laravel-7.png" alt="vue-tailwind-laravel-7" />
+Finally, we just need to style our todo items. We can skip the wrapper <code class="language-plaintext highlighter-rouge">div</code> and jump directly to our <code class="language-plaintext highlighter-rouge">v-for</code>. Once again, we’re going to add a whole bunch of classes. So, let’s take a look at the finished result and then go over it.</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>&lt;div class="flex mb-4 items-center" v-for="(todo, index) in todos" :key="todo.id"&gt;
+    &lt;p class="w-full" :class="todo.finished ? 'line-through text-green' : 'text-grey-darkest'"&gt;&lt;/p&gt;
+    &lt;button class="flex-no-shrink p-2 ml-4 mr-2 border-2 rounded hover:text-white" :class="todo.finished ? 'text-grey border-grey hover:bg-grey' : 'text-green border-green hover:bg-green'" @click="updateStatus(todo)" v-text="todo.finished ? 'Not Done' : 'Done'"&gt;&lt;/button&gt;
+    &lt;button class="flex-no-shrink p-2 ml-2 border-2 rounded text-red border-red hover:text-white hover:bg-red" @click="remove(index)"&gt;Remove&lt;/button&gt;
+&lt;/div&gt;
+</code></pre></div></div>
+<p>It’s all pretty simple stuff, but we are doing one or two unique things. On the <code class="language-plaintext highlighter-rouge">v-for</code> div, we’re just making it a flex element, aligning the items in the center, and adding some spacing to the bottom.</p>
+
+<p>The p tag might look simple, but we’ve actually leveraged Vue’s dynamic classes to toggles our classes to show our users that they have completed a todo. In the unfinished state, we’re just coloring the text dark grey with <code class="language-plaintext highlighter-rouge">.text-grey-darkest</code>. But, in the finished state, we flip the color to green and add a strikethrough with <code class="language-plaintext highlighter-rouge">.text-green</code> and <code class="language-plaintext highlighter-rouge">.line-through</code>.</p>
+
+<p>For our buttons, we’re leveraging some of the classes we added to the “Add” button earlier, while also taking advantage of Vue’s dynamic classes. I’ll leave it as an exercise to you to parse out what exactly we’re doing here.</p>
+
+<p>Bada bing, bada boom we’ve finally finished styling our todo list!
+<img src="/assets/images/posts/vue-tailwind-laravel-8.png" alt="vue-tailwind-laravel-8" /></p>
+
+<h3 id="the-wrap-up">The Wrap Up</h3>
+<p>Whew! We certainly covered a lot here, and we’re really just getting started. In this post, we set up our Laravel, Vue, and Tailwind project; built a todo component with Vue.js, and then styled it with Tailwind. For our next post, we’ve certainly got a lot more to cover. We have to persist our todos to a database, and we should probably extract some of our Tailwind classes into our own stylesheets so we can manage this component a bit easier. Thanks for sticking with me throughout this tutorial. I hope it showed you some of the great things you can do with Tailwind, Vue, and Laravel.</p>
+
+  </div><a class="u-url" href="/2023/12/06/vue-tailwind-laravel/" hidden></a>
+</article>
+
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/"></data>
+
+  <div class="wrapper">
+
+    <div class="footer-col-wrapper">
+
+      <div class="footer-col footer-col-2">
+        <img src="" style="max-width: 75px; border-radius: 100%">
+      </div>
+
+      <div class="footer-col footer-col-1"><ul class="social-media-list"><li><a href="mailto:hardev0a0@gmail.com"><span class="username">hardev0a0@gmail.com</span></a></li></ul>
+</div>
+
+      <div class="footer-col footer-col-3">
+        <p>Lead Software Engineer</p>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+</body>
+
+</html>

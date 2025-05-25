@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1"><!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>Firebase WooCommerce Auth – WordPress Plugin | Harry Singh</title>
+<meta name="generator" content="Jekyll v3.10.0" />
+<meta property="og:title" content="Firebase WooCommerce Auth – WordPress Plugin" />
+<meta name="author" content="Harry Singh" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="I recently built a WordPress plugin that lets you log into a WooCommerce store using Firebase Authentication. It’s called Firebase WooCommerce Auth, and it supports Google, GitHub, Microsoft, phone sign-in, email/password, and even email magic links." />
+<meta property="og:description" content="I recently built a WordPress plugin that lets you log into a WooCommerce store using Firebase Authentication. It’s called Firebase WooCommerce Auth, and it supports Google, GitHub, Microsoft, phone sign-in, email/password, and even email magic links." />
+<link rel="canonical" href="https://harrysingh.xyz/2022/04/12/firebase-woocommerce-auth/" />
+<meta property="og:url" content="https://harrysingh.xyz/2022/04/12/firebase-woocommerce-auth/" />
+<meta property="og:site_name" content="Harry Singh" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2022-04-12T16:00:00-05:00" />
+<meta name="twitter:card" content="summary" />
+<meta property="twitter:title" content="Firebase WooCommerce Auth – WordPress Plugin" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Harry Singh"},"dateModified":"2022-04-12T16:00:00-05:00","datePublished":"2022-04-12T16:00:00-05:00","description":"I recently built a WordPress plugin that lets you log into a WooCommerce store using Firebase Authentication. It’s called Firebase WooCommerce Auth, and it supports Google, GitHub, Microsoft, phone sign-in, email/password, and even email magic links.","headline":"Firebase WooCommerce Auth – WordPress Plugin","mainEntityOfPage":{"@type":"WebPage","@id":"https://harrysingh.xyz/2022/04/12/firebase-woocommerce-auth/"},"url":"https://harrysingh.xyz/2022/04/12/firebase-woocommerce-auth/"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/assets/main.css"><link type="application/atom+xml" rel="alternate" href="https://harrysingh.xyz/feed.xml" title="Harry Singh" /></head>
+<body><header class="site-header" role="banner">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/">Harry Singh</a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger"><a class="page-link" href="/about/">About</a></div>
+      </nav></div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title p-name" itemprop="name headline">Firebase WooCommerce Auth – WordPress Plugin</h1>
+    <p class="post-meta">
+      <time class="dt-published" datetime="2022-04-12T16:00:00-05:00" itemprop="datePublished">Apr 12, 2022
+      </time></p>
+  </header>
+
+  <div class="post-content e-content" itemprop="articleBody">
+    <p>I recently built a WordPress plugin that lets you log into a WooCommerce store using Firebase Authentication. It’s called <strong>Firebase WooCommerce Auth</strong>, and it supports Google, GitHub, Microsoft, phone sign-in, email/password, and even email magic links.</p>
+
+<p>The plugin connects Firebase Auth with WooCommerce in a secure, seamless way. It dynamically creates WordPress user accounts on login, syncs profile data like email and phone, and integrates directly into WooCommerce’s session system so users stay logged in through the checkout process.</p>
+
+<h2 id="why-i-built-it">Why I Built It</h2>
+
+<p>Many store owners want a simple, secure, and modern way to let users sign in—especially from mobile. Firebase does a great job of handling auth securely and scalably, but bridging that into WordPress (especially WooCommerce) wasn’t straightforward. This plugin fixes that.</p>
+
+<h2 id="key-features">Key Features</h2>
+
+<ul>
+  <li>🔐 Secure login via Firebase Authentication</li>
+  <li>🛒 WooCommerce session integration + billing field population</li>
+  <li>🧩 Supports Google, Phone, GitHub, Twitter, Microsoft, and more</li>
+  <li>⚙️ Admin settings page for Firebase config</li>
+  <li>💬 Customizable legal links (TOS, privacy policy)</li>
+  <li>🧑 Prompt for email if missing (e.g., from phone-only sign-in)</li>
+</ul>
+
+<h2 id="example-ui">Example UI</h2>
+
+<p>Here’s what the admin side looks like:</p>
+
+<p>This is the Firebase configuration screen where the site admin pastes in keys from the Firebase project. It ensures secure communication between the WordPress plugin and Firebase.</p>
+<p align="center">
+  <img src="/assets/images/posts/Firebase%20Configuration.png" alt="Firebase Config" width="70%" />
+</p>
+
+<p>This shows the sign-in methods you can enable—like Google, GitHub, Phone, or Email. These toggle switches make it easy to control what your users see.</p>
+<p align="center">
+  <img src="/assets/images/posts/Sign-In%20Methods.png" alt="Auth Providers" width="70%" />
+</p>
+
+<p>Here’s how the plugin integrates seamlessly into the WooCommerce checkout flow, giving users a smooth login experience before they complete a purchase.</p>
+<p align="center">
+  <img src="/assets/images/posts/Easy%20login%20during%20the%20checkout.png" alt="Legal Links Settings" width="70%" />
+</p>
+
+<h2 id="shortcode-usage">Shortcode Usage</h2>
+
+<p>Place this shortcode on any login or signup page:</p>
+
+<div class="language-html highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[firebase_auth_ui]
+</code></pre></div></div>
+
+<p>It will render FirebaseUI, allowing users to sign in using the enabled methods.</p>
+
+<h2 id="reflections--whats-next">Reflections &amp; What’s Next</h2>
+
+<p>Building this plugin taught me how to bridge modern authentication flows with legacy platforms like WordPress and WooCommerce. I gained experience working with the Firebase JS SDK, handling async auth flows, and syncing third-party profiles with native user objects.</p>
+
+<p>If I had more time, I’d love to add more fine-grained control over user roles on signup, improve styling flexibility for the auth widget, and add analytics hooks to better understand how users log in.</p>
+
+  </div><a class="u-url" href="/2022/04/12/firebase-woocommerce-auth/" hidden></a>
+</article>
+
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/"></data>
+
+  <div class="wrapper">
+
+    <div class="footer-col-wrapper">
+
+      <div class="footer-col footer-col-2">
+        <img src="" style="max-width: 75px; border-radius: 100%">
+      </div>
+
+      <div class="footer-col footer-col-1"><ul class="social-media-list"><li><a href="mailto:hardev0a0@gmail.com"><span class="username">hardev0a0@gmail.com</span></a></li></ul>
+</div>
+
+      <div class="footer-col footer-col-3">
+        <p>Lead Software Engineer</p>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+</body>
+
+</html>

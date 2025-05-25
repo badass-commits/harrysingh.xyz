@@ -1,0 +1,1152 @@
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.10.0">Jekyll</generator><link href="https://harrysingh.xyz/feed.xml" rel="self" type="application/atom+xml" /><link href="https://harrysingh.xyz/" rel="alternate" type="text/html" /><updated>2025-05-25T02:28:13-05:00</updated><id>https://harrysingh.xyz/feed.xml</id><title type="html">Harry Singh</title><subtitle>Lead Software Engineer</subtitle><author><name>Harry Singh</name></author><entry><title type="html">CQRS with Laravel 11</title><link href="https://harrysingh.xyz/2025/04/28/cqrs-laravel-11/" rel="alternate" type="text/html" title="CQRS with Laravel 11" /><published>2025-04-28T15:00:00-05:00</published><updated>2025-04-28T15:00:00-05:00</updated><id>https://harrysingh.xyz/2025/04/28/cqrs-laravel-11</id><content type="html" xml:base="https://harrysingh.xyz/2025/04/28/cqrs-laravel-11/"><![CDATA[<p>As business logic becomes more complex, services can become bloated, classes may do too much, and tests become hard to maintain. To address these issues, the author applied the CQRS (Command Query Responsibility Segregation) pattern in Laravel projects, leading to improved code clarity and maintainability.</p>
+
+<h2 id="what-is-cqrs">What is CQRS?</h2>
+
+<p>CQRS is an architectural pattern that separates commands (operations that change the system’s state) from queries (operations that read data). This separation:</p>
+
+<ul>
+  <li>Reflects business intent more clearly in code</li>
+  <li>Makes unit testing easier</li>
+  <li>Keeps classes small and focused</li>
+  <li>Can improve performance by optimizing read and write paths separately</li>
+</ul>
+
+<p>In practice, this involves creating separate classes for each action, typically organized under <code class="language-plaintext highlighter-rouge">Commands/</code> and <code class="language-plaintext highlighter-rouge">Queries/</code>, each with its own handler.</p>
+
+<h2 id="setting-up-cqrs-in-laravel">Setting up CQRS in Laravel</h2>
+
+<p>To maintain organization, commands and queries are placed under a <code class="language-plaintext highlighter-rouge">CQRS</code> folder:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>app/
+├── CQRS/
+│   ├── Commands/
+│   │   ├── GenerateMonthlyInvoiceCommand.php
+│   │   └── GenerateMonthlyInvoiceHandler.php
+│   └── Queries/
+│       ├── GetInvoiceBreakdownQuery.php
+│       └── GetInvoiceBreakdownHandler.php
+</code></pre></div></div>
+
+<p>This structure makes it easy to reason about the application’s use cases.</p>
+
+<h2 id="implementing-a-simple-command-bus">Implementing a Simple Command Bus</h2>
+
+<p>A command bus is used to automatically find the right handler for any command or query based on a naming convention (<code class="language-plaintext highlighter-rouge">Command</code> ➔ <code class="language-plaintext highlighter-rouge">CommandHandler</code>, <code class="language-plaintext highlighter-rouge">Query</code> ➔ <code class="language-plaintext highlighter-rouge">QueryHandler</code>). Here’s a simplified version:</p>
+
+<div class="language-php highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">namespace</span> <span class="nn">App\Services</span><span class="p">;</span>
+
+<span class="kn">use</span> <span class="nc">Illuminate\Pipeline\Pipeline</span><span class="p">;</span>
+
+<span class="kd">class</span> <span class="nc">CommandBus</span>
+<span class="p">{</span>
+    <span class="k">public</span> <span class="k">function</span> <span class="n">__construct</span><span class="p">(</span>
+        <span class="k">protected</span> <span class="kt">array</span> <span class="nv">$middlewares</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="p">)</span> <span class="p">{}</span>
+
+    <span class="k">public</span> <span class="k">function</span> <span class="n">dispatch</span><span class="p">(</span><span class="kt">object</span> <span class="nv">$command</span><span class="p">):</span> <span class="kt">mixed</span>
+    <span class="p">{</span>
+        <span class="nv">$handler</span> <span class="o">=</span> <span class="nv">$this</span><span class="o">-&gt;</span><span class="nf">resolveHandler</span><span class="p">(</span><span class="nv">$command</span><span class="p">);</span>
+
+        <span class="k">return</span> <span class="nf">app</span><span class="p">(</span><span class="nc">Pipeline</span><span class="o">::</span><span class="n">class</span><span class="p">)</span>
+            <span class="o">-&gt;</span><span class="nf">send</span><span class="p">(</span><span class="nv">$command</span><span class="p">)</span>
+            <span class="o">-&gt;</span><span class="nf">through</span><span class="p">(</span><span class="nv">$this</span><span class="o">-&gt;</span><span class="n">middlewares</span><span class="p">)</span>
+            <span class="o">-&gt;</span><span class="nf">then</span><span class="p">(</span><span class="k">fn</span> <span class="p">(</span><span class="nv">$command</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="nv">$handler</span><span class="o">-&gt;</span><span class="nf">handle</span><span class="p">(</span><span class="nv">$command</span><span class="p">));</span>
+    <span class="p">}</span>
+
+    <span class="k">protected</span> <span class="k">function</span> <span class="n">resolveHandler</span><span class="p">(</span><span class="kt">object</span> <span class="nv">$command</span><span class="p">):</span> <span class="kt">object</span>
+    <span class="p">{</span>
+        <span class="nv">$handlerClass</span> <span class="o">=</span> <span class="nb">get_class</span><span class="p">(</span><span class="nv">$command</span><span class="p">)</span> <span class="mf">.</span> <span class="s1">'Handler'</span><span class="p">;</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nb">class_exists</span><span class="p">(</span><span class="nv">$handlerClass</span><span class="p">))</span> <span class="p">{</span>
+            <span class="k">throw</span> <span class="k">new</span> <span class="err">\</span><span class="nf">RuntimeException</span><span class="p">(</span><span class="s2">"Handler [</span><span class="si">{</span><span class="nv">$handlerClass</span><span class="si">}</span><span class="s2">] not found for command "</span> <span class="mf">.</span> <span class="nb">get_class</span><span class="p">(</span><span class="nv">$command</span><span class="p">));</span>
+        <span class="p">}</span>
+
+        <span class="k">return</span> <span class="nf">app</span><span class="p">(</span><span class="nv">$handlerClass</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>Middlewares, such as logging or validation, can be added around the execution:</p>
+
+<div class="language-php highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">namespace</span> <span class="nn">App\Services\Middlewares</span><span class="p">;</span>
+
+<span class="kn">use</span> <span class="nc">Closure</span><span class="p">;</span>
+
+<span class="kd">class</span> <span class="nc">LogCommandExecution</span>
+<span class="p">{</span>
+    <span class="k">public</span> <span class="k">function</span> <span class="n">handle</span><span class="p">(</span><span class="kt">object</span> <span class="nv">$command</span><span class="p">,</span> <span class="kt">Closure</span> <span class="nv">$next</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="nf">logger</span><span class="p">()</span><span class="o">-&gt;</span><span class="nf">info</span><span class="p">(</span><span class="s1">'Executing command: '</span> <span class="mf">.</span> <span class="nb">get_class</span><span class="p">(</span><span class="nv">$command</span><span class="p">));</span>
+
+        <span class="k">return</span> <span class="nv">$next</span><span class="p">(</span><span class="nv">$command</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>Register the command bus in your service provider:</p>
+
+<div class="language-php highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">use</span> <span class="nc">App\Services\CommandBus</span><span class="p">;</span>
+
+<span class="k">public</span> <span class="k">function</span> <span class="n">register</span><span class="p">()</span>
+<span class="p">{</span>
+    <span class="nv">$this</span><span class="o">-&gt;</span><span class="n">app</span><span class="o">-&gt;</span><span class="nf">singleton</span><span class="p">(</span><span class="nc">CommandBus</span><span class="o">::</span><span class="n">class</span><span class="p">,</span> <span class="k">function</span> <span class="p">()</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="k">new</span> <span class="nc">CommandBus</span><span class="p">([</span>
+            <span class="err">\</span><span class="nc">App\Services\Middlewares\LogCommandExecution</span><span class="o">::</span><span class="n">class</span><span class="p">,</span>
+        <span class="p">]);</span>
+    <span class="p">});</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h2 id="common-structure">Common Structure</h2>
+
+<ul>
+  <li><strong>Writes:</strong>
+    <ul>
+      <li><code class="language-plaintext highlighter-rouge">Command</code>: Holds the input data</li>
+      <li><code class="language-plaintext highlighter-rouge">CommandHandler</code>: Contains the business logic</li>
+    </ul>
+  </li>
+  <li><strong>Reads:</strong>
+    <ul>
+      <li><code class="language-plaintext highlighter-rouge">Query</code>: Describes the data you want</li>
+      <li><code class="language-plaintext highlighter-rouge">QueryHandler</code>: Handles the logic and returns a DTO or array</li>
+    </ul>
+  </li>
+</ul>
+
+<h2 id="naming-commands-and-queries">Naming Commands and Queries</h2>
+
+<p>Class names should reflect business intent:</p>
+
+<ul>
+  <li>Prefer: <code class="language-plaintext highlighter-rouge">GenerateMonthlyInvoiceCommand</code>, <code class="language-plaintext highlighter-rouge">AssignRoleToUserCommand</code>, <code class="language-plaintext highlighter-rouge">GetInvoiceBreakdownQuery</code></li>
+  <li>Avoid: Generic names like <code class="language-plaintext highlighter-rouge">InvoiceService</code>, <code class="language-plaintext highlighter-rouge">Handler</code>, <code class="language-plaintext highlighter-rouge">DoStuff</code></li>
+</ul>
+
+<p>This approach makes it easier for non-technical stakeholders to understand what a command does.</p>
+
+<h2 id="when-to-use-cqrs">When to Use CQRS</h2>
+
+<p>CQRS is beneficial when:</p>
+
+<ul>
+  <li>You have rich business rules (state checks, validations, calculations)</li>
+  <li>You need to aggregate data before writing</li>
+  <li>You want to structure your code around business use cases</li>
+  <li>You’re building modular or DDD-style architectures</li>
+</ul>
+
+<p>For simple CRUD operations, CQRS might be overkill.</p>
+
+<h2 id="real-world-example-generating-a-monthly-invoice">Real-World Example: Generating a Monthly Invoice</h2>
+
+<h3 id="context">Context:</h3>
+
+<p>At the end of each month, the system must generate an invoice for a customer based on multiple data sources (subscriptions, one-time services, product usage). Before saving the invoice, it needs to:</p>
+
+<ul>
+  <li>Retrieve all usage records for the month</li>
+  <li>Calculate the subtotal, taxes, and possible discounts</li>
+  <li>Build invoice line items</li>
+  <li>Save everything to the database</li>
+</ul>
+
+<h3 id="command">Command:</h3>
+
+<div class="language-php highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">class</span> <span class="nc">GenerateMonthlyInvoiceCommand</span>
+<span class="p">{</span>
+    <span class="k">public</span> <span class="k">function</span> <span class="n">__construct</span><span class="p">(</span>
+        <span class="k">public</span> <span class="k">readonly</span> <span class="kt">int</span> <span class="nv">$customerId</span><span class="p">,</span>
+        <span class="k">public</span> <span class="k">readonly</span> <span class="kt">DateTimeInterface</span> <span class="nv">$month</span>
+    <span class="p">)</span> <span class="p">{}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="handler">Handler:</h3>
+
+<div class="language-php highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">class</span> <span class="nc">GenerateMonthlyInvoiceHandler</span>
+<span class="p">{</span>
+    <span class="k">public</span> <span class="k">function</span> <span class="n">__construct</span><span class="p">(</span>
+        <span class="k">private</span> <span class="kt">ConsumptionRepository</span> <span class="nv">$consumptions</span><span class="p">,</span>
+        <span class="k">private</span> <span class="kt">InvoiceRepository</span> <span class="nv">$invoices</span><span class="p">,</span>
+        <span class="k">private</span> <span class="kt">TaxService</span> <span class="nv">$taxService</span><span class="p">,</span>
+        <span class="k">private</span> <span class="kt">DiscountService</span> <span class="nv">$discountService</span><span class="p">,</span>
+    <span class="p">)</span> <span class="p">{}</span>
+
+    <span class="k">public</span> <span class="k">function</span> <span class="n">handle</span><span class="p">(</span><span class="kt">GenerateMonthlyInvoiceCommand</span> <span class="nv">$command</span><span class="p">):</span> <span class="kt">void</span>
+    <span class="p">{</span>
+        <span class="nv">$items</span> <span class="o">=</span> <span class="nv">$this</span><span class="o">-&gt;</span><span class="n">consumptions</span><span class="o">-&gt;</span><span class="nf">forCustomerAndMonth</span><span class="p">(</span><span class="nv">$command</span><span class="o">-&gt;</span><span class="n">customerId</span><span class="p">,</span> <span class="nv">$command</span><span class="o">-&gt;</span><span class="n">month</span><span class="p">);</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="nv">$items</span><span class="o">-&gt;</span><span class="nf">isEmpty</span><span class="p">())</span> <span class="p">{</span>
+            <span class="k">throw</span> <span class="k">new</span> <span class="nc">DomainException</span><span class="p">(</span><span class="s1">'No usage to invoice.'</span><span class="p">);</span>
+        <span class="p">}</span>
+
+        <span class="nv">$subtotal</span> <span class="o">=</span> <span class="nv">$items</span><span class="o">-&gt;</span><span class="nf">sum</span><span class="p">(</span><span class="k">fn</span><span class="p">(</span><span class="nv">$item</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="nv">$item</span><span class="o">-&gt;</span><span class="n">price</span><span class="p">);</span>
+        <span class="nv">$taxes</span> <span class="o">=</span> <span class="nv">$this</span><span class="o">-&gt;</span><span class="n">taxService</span><span class="o">-&gt;</span><span class="nf">compute</span><span class="p">(</span><span class="nv">$command</span><span class="o">-&gt;</span><span class="n">customerId</span><span class="p">,</span> <span class="nv">$subtotal</span><span class="p">);</span>
+        <span class="nv">$discount</span> <span class="o">=</span> <span class="nv">$this</span><span class="o">-&gt;</span><span class="n">discountService</span><span class="o">-&gt;</span><span class="nf">apply</span><span class="p">(</span><span class="nv">$command</span><span class="o">-&gt;</span><span class="n">customerId</span><span class="p">,</span> <span class="nv">$items</span><span class="p">);</span>
+        <span class="nv">$total</span> <span class="o">=</span> <span class="nv">$subtotal</span> <span class="o">+</span> <span class="nv">$taxes</span> <span class="o">-</span> <span class="nv">$discount</span><span class="p">;</span>
+
+        <span class="nv">$invoice</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">Invoice</span><span class="p">(</span>
+            <span class="n">customerId</span><span class="o">:</span> <span class="nv">$command</span><span class="o">-&gt;</span><span class="n">customerId</span><span class="p">,</span>
+            <span class="n">month</span><span class="o">:</span> <span class="nv">$command</span><span class="o">-&gt;</span><span class="n">month</span><span class="p">,</span>
+            <span class="n">subtotal</span><span class="o">:</span> <span class="nv">$subtotal</span><span class="p">,</span>
+            <span class="n">taxes</span><span class="o">:</span> <span class="nv">$taxes</span><span class="p">,</span>
+            <span class="n">discount</span><span class="o">:</span> <span class="nv">$discount</span><span class="p">,</span>
+            <span class="n">total</span><span class="o">:</span> <span class="nv">$total</span>
+        <span class="p">);</span>
+
+        <span class="nv">$invoice</span><span class="o">-&gt;</span><span class="nf">addLinesFromConsumption</span><span class="p">(</span><span class="nv">$items</span><span class="p">);</span>
+        <span class="nv">$this</span><span class="o">-&gt;</span><span class="n">invoices</span><span class="o">-&gt;</span><span class="nf">save</span><span class="p">(</span><span class="nv">$invoice</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="query">Query:</h3>
+
+<div class="language-php highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">class</span> <span class="nc">GetInvoiceBreakdownQuery</span>
+<span class="p">{</span>
+    <span class="k">public</span> <span class="k">function</span> <span class="n">__construct</span><span class="p">(</span>
+        <span class="k">public</span> <span class="k">readonly</span> <span class="kt">int</span> <span class="nv">$customerId</span><span class="p">,</span>
+        <span class="k">public</span> <span class="k">readonly</span> <span class="kt">DateTimeInterface</span> <span class="nv">$month</span>
+    <span class="p">)</span> <span class="p">{}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="handler-1">Handler:</h3>
+
+<div class="language-php highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">class</span> <span class="nc">GetInvoiceBreakdownHandler</span>
+<span class="p">{</span>
+    <span class="k">public</span> <span class="k">function</span> <span class="n">__construct</span><span class="p">(</span><span class="k">private</span> <span class="kt">InvoiceRepository</span> <span class="nv">$invoices</span><span class="p">)</span> <span class="p">{}</span>
+
+    <span class="k">public</span> <span class="k">function</span> <span class="n">handle</span><span class="p">(</span><span class="kt">GetInvoiceBreakdownQuery</span> <span class="nv">$query</span><span class="p">):</span> <span class="kt">InvoiceDTO</span>
+    <span class="p">{</span>
+        <span class="nv">$invoice</span> <span class="o">=</span> <span class="nv">$this</span><span class="o">-&gt;</span><span class="n">invoices</span><span class="o">-&gt;</span><span class="nf">findByCustomerAndMonth</span><span class="p">(</span><span class="nv">$query</span><span class="o">-&gt;</span><span class="n">customerId</span><span class="p">,</span> <span class="nv">$query</span><span class="o">-&gt;</span><span class="n">month</span><span class="p">);</span>
+        <span class="k">return</span> <span class="k">new</span> <span class="nc">InvoiceDTO</span><span class="p">(</span><span class="nv">$invoice</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h2 id="benefits-observed">Benefits Observed</h2>
+
+<ul>
+  <li><strong>Clarity:</strong> Command and query names clearly describe business actions</li>
+  <li><strong>Isolation:</strong> Each handler is easy to test independently</li>
+  <li><strong>Organization:</strong> Fits perfectly in a modular architecture</li>
+  <li><strong>Scalability:</strong> Easily plug in validation, logging, or events without bloating controllers</li>
+</ul>
+
+<h2 id="testing-handlers">Testing Handlers</h2>
+
+<p>CQRS simplifies unit testing. Each command or query is an isolated unit that can be tested without going through a controller or infrastructure.</p>
+
+<h3 id="example-test">Example Test:</h3>
+
+<div class="language-php highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nf">test</span><span class="p">(</span><span class="s1">'it generates an invoice with correct totals'</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nv">$consumptions</span> <span class="o">=</span> <span class="nf">collect</span><span class="p">([</span>
+        <span class="k">new</span> <span class="nc">ConsumptionItem</span><span class="p">(</span><span class="n">price</span><span class="o">:</span> <span class="mi">100</span><span class="p">),</span>
+        <span class="k">new</span> <span class="nc">ConsumptionItem</span><span class="p">(</span><span class="n">price</span><span class="o">:</span> <span class="mi">200</span><span class="p">),</span>
+    <span class="p">]);</span>
+
+    <span class="nv">$handler</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">GenerateMonthlyInvoiceHandler</span><span class="p">(</span>
+        <span class="k">new</span> <span class="nc">InMemoryConsumptionRepository</span><span class="p">(</span><span class="nv">$consumptions</span><span class="p">),</span>
+        <span class="k">new</span> <span class="nc">FakeInvoiceRepository</span><span class="p">(),</span>
+        <span class="k">new</span> <span class="nc">FixedTaxService</span><span class="p">(</span><span class="mi">20</span><span class="p">),</span>
+        <span class="k">new</span> <span class="nc">FixedDiscountService</span><span class="p">(</span><span class="mi">30</span><span class="p">)</span>
+    <span class="p">);</span>
+
+    <span class="nv">$handler</span><span class="o">-&gt;</span><span class="nf">handle</span><span class="p">(</span><span class="k">new</span> <span class="nc">GenerateMonthlyInvoiceCommand</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nf">now</span><span class="p">()));</span>
+
+    <span class="nf">expect</span><span class="p">(</span><span class="nc">FakeInvoiceRepository</span><span class="o">::</span><span class="nv">$savedInvoice</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">not</span><span class="o">-&gt;</span><span class="nf">toBeNull</span><span class="p">();</span>
+    <span class="nf">expect</span><span class="p">(</span><span class="nc">FakeInvoiceRepository</span><span class="o">::</span><span class="nv">$savedInvoice</span><span class="o">-&gt;</span><span class="n">total</span><span class="p">)</span><span class="o">-&gt;</span><span class="nf">toBe</span><span class="p">(</span><span class="mi">290</span><span class="p">);</span> <span class="c1">// 300 + 20 - 30</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h2 id="conclusion">Conclusion</h2>
+
+<p>CQRS is a valuable tool for structuring code when business logic becomes complex. It makes intentions explicit, responsibilities more focused, and code easier to test. While not necessary for every situation, it’s beneficial when services start feeling heavy or messy.</p>
+
+<h2 id="bonus-cqrs-vs-cqs">Bonus: CQRS vs CQS</h2>
+
+<ul>
+  <li><strong>CQS (Command Query Separation):</strong> A design principle where a method should either modify state (command) or return data (query), but never both.</li>
+  <li><strong>CQRS (Command Query Responsibility Segregation):</strong> Applies this principle at the application level by separating models, services, and logic for reads and writes.</li>
+</ul>
+
+<p>In essence, CQRS is structural, while CQS is behavioral.</p>]]></content><author><name>Harry Singh</name></author><summary type="html"><![CDATA[As business logic becomes more complex, services can become bloated, classes may do too much, and tests become hard to maintain. To address these issues, the author applied the CQRS (Command Query Responsibility Segregation) pattern in Laravel projects, leading to improved code clarity and maintainability.]]></summary></entry><entry><title type="html">Leading with Purpose: Principles That Shape Success</title><link href="https://harrysingh.xyz/2024/09/10/leading-with-purpose/" rel="alternate" type="text/html" title="Leading with Purpose: Principles That Shape Success" /><published>2024-09-10T16:56:42-05:00</published><updated>2024-09-10T16:56:42-05:00</updated><id>https://harrysingh.xyz/2024/09/10/leading-with-purpose</id><content type="html" xml:base="https://harrysingh.xyz/2024/09/10/leading-with-purpose/"><![CDATA[<p>I’ve been searching for the right topic for my next blog post, which would offer relevance and valuable insights. As my role has evolved in recent months, I’ve gained a deeper understanding of leadership and what it truly means to be a leader. While I’ve held various leadership positions in the past, it’s only now, with the opportunity to reflect, that I’ve crystallized my beliefs about what constitutes strong leadership traits. Working as a lead software engineer has exposed me to exceptional technical and people leaders whose collaboration has helped shape my leadership principles. This blog post aims to share these principles and provide my perspective on their significance.</p>
+
+<p>Before we begin, it’s essential to acknowledge that leadership takes various forms, and the principles I present may not be universally applicable. My objective is not to impose my views on others but to share what leadership means.</p>
+<h2 id="introduction">Introduction:</h2>
+<p>Leadership goes beyond a mere title or position; it embodies a mindset and a set of principles that guide individuals to unlock their potential and that of others. Whether leading a small team or an entire organization, understanding and embodying practical leadership principles can make all the difference in achieving professional and personal success.</p>
+
+<p>In this blog post, I will explore the six leadership principles I hold myself accountable for. My aim with these principles is to cultivate a positive and productive work environment that lays a solid foundation for driving teams towards shared goals.</p>
+<h3 id="lead-by-example">Lead by Example:</h3>
+<p>As a leader, actions speak louder than words. Leading by example entails embodying the behaviours and values you expect from others. Whether demonstrating integrity, embracing a strong work ethic, or fostering a culture of continuous learning, your actions set the standard for others to follow.</p>
+<h3 id="communicate-effectively">Communicate Effectively:</h3>
+<p>Clear, open, and transparent communication forms the backbone of effective leadership. It involves listening, providing feedback, and ensuring everyone is aligned on goals and expectations. Effective communication builds trust, resolves conflicts, and strengthens collaboration within the team. Whether the message is positive or negative, clarity in communication fosters a shared understanding.</p>
+<h3 id="empower-and-delegate">Empower and Delegate:</h3>
+<p>A remarkable leader recognizes the strengths and potential of their team members and empowers them to take ownership and make decisions. Delegating tasks and responsibilities lightens the load and allows your team to grow and develop their skills. Trusting your team and granting autonomy instil confidence and a sense of ownership.</p>
+<h3 id="inspire-and-motivate">Inspire and Motivate:</h3>
+<p>A leader manages tasks, but, more importantly, inspires and motivates their team members. Be a source of inspiration by setting a compelling vision, articulating goals, and sharing the bigger picture. Recognize and celebrate achievements, creating a positive and supportive atmosphere where individuals feel motivated to give their best.</p>
+<h3 id="humans-not-robots">Humans, not robots</h3>
+<p>A great leader acknowledges and appreciates each team member’s unique qualities and needs. Treating people as individuals rather than mere cogs in a machine demonstrates empathy, fosters a positive work environment, and builds strong relationships.</p>
+<h3 id="stay-relatable">Stay relatable</h3>
+<p>Staying relatable as a leader means remaining open to questions and maintaining credibility in your expertise. While it may not always be necessary, I have personally recognized and valued the importance of this approach, especially when working as an individual contributor within a team.</p>
+<h2 id="conclusion">Conclusion:</h2>
+<p>I’ve learned that leadership is an ongoing journey that I have not mastered and may never (will likely never :) ) fully conquer. Each leader holds their own perspective on which behaviours are important to them. By sharing my leadership principles, I hope to spark insightful discussions and encourage fellow leaders to reflect on their guiding principles. Together, we can continue to grow and refine our leadership approaches, driving positive impact and empowering those around us.</p>]]></content><author><name>Harry Singh</name></author><summary type="html"><![CDATA[I’ve been searching for the right topic for my next blog post, which would offer relevance and valuable insights. As my role has evolved in recent months, I’ve gained a deeper understanding of leadership and what it truly means to be a leader. While I’ve held various leadership positions in the past, it’s only now, with the opportunity to reflect, that I’ve crystallized my beliefs about what constitutes strong leadership traits. Working as a lead software engineer has exposed me to exceptional technical and people leaders whose collaboration has helped shape my leadership principles. This blog post aims to share these principles and provide my perspective on their significance.]]></summary></entry><entry><title type="html">Build a customizable Vue.js modal with Tailwind CSS</title><link href="https://harrysingh.xyz/2023/12/14/vue-modal-with-tailwind/" rel="alternate" type="text/html" title="Build a customizable Vue.js modal with Tailwind CSS" /><published>2023-12-14T14:00:00-06:00</published><updated>2023-12-14T14:00:00-06:00</updated><id>https://harrysingh.xyz/2023/12/14/vue-modal-with-tailwind</id><content type="html" xml:base="https://harrysingh.xyz/2023/12/14/vue-modal-with-tailwind/"><![CDATA[<p>As I was hanging out with the Tailwind CSS <a href="https://tailwindcss.slack.com/join/shared_invite/enQtMjc2NTA1NTg0NTEyLTY4ZTg1YWFjM2NjMTRkMmNkMTA4MGNiZTFmNDYyYTJhNjNkY2QxODQwODE4MWRiZDFlNzdmOGI0MmQ1M2EzZmQ">Slack community</a> the other day, I had a request to write a tutorial on how to make a Vue.js modal styled with Tailwind. That sounds like an excellent component to build, so let’s get to it.</p>
+
+<h3 id="set-up">Set Up</h3>
+<p>Per usual, we’ll be starting with a regular Laravel project. I’ve covered this process in a previous post, but for a quick recap here are the steps.</p>
+
+<ol>
+  <li>Create a new Laravel project by following the <a href="https://laravel.com/docs/5.5/installation">docs</a></li>
+  <li><a href="https://nick-basile.com/blog/post/how-to-build-a-vuejs-component-with-tailwind-in-a-laravel-project">Configure</a> our <code class="language-plaintext highlighter-rouge">welcome.blade.php</code> so we can use Vue.js</li>
+  <li>Add Tailwind CSS to the project through <a href="https://tailwindcss.com/docs/installation/#npm">Yarn or NPM</a></li>
+  <li><a href="https://www.youtube.com/watch?v=tO5sxLapAts">Profit</a>?</li>
+</ol>
+
+<h3 id="hop-on-the-event-bus">Hop on the Event Bus</h3>
+<p>With our usual configuration out of the way, we can layer on the custom details we need for this project. Since we’ll want to trigger our modal from anywhere in our code, we need to set up a Vue event bus.</p>
+
+<p>This is super simple. We just hop into our <code class="language-plaintext highlighter-rouge">app.js</code> file and right after we require Vue, we can and add the following:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>//Event Bus
+window.bus = new Vue();
+</code></pre></div></div>
+<p>Now, we can use our event bus to communicate between components. If you’re looking for some more information about what a event bus does, you can always check out the <a href="https://vuejs.org/v2/guide/components.html#Non-Parent-Child-Communication">Vue docs</a>. But, I think it’ll start to make more sense when we use it.</p>
+
+<p>With that set up, we can get rid of the example component (if you haven’t already) and add in our modal component.</p>
+
+<p>In <code class="language-plaintext highlighter-rouge">resources/assets/js/components</code>, we can delete the <code class="language-plaintext highlighter-rouge">ExampleComponent.vue</code> and add our own file called <code class="language-plaintext highlighter-rouge">modal.vue</code>. Now, inside of <code class="language-plaintext highlighter-rouge">resources/assets/js/app.js</code> we can update the component import to reference our <code class="language-plaintext highlighter-rouge">modal</code> component instead of the example so it looks like this:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Vue.component('modal-component', require('./components/modal.vue'));
+</code></pre></div></div>
+<p>Now, we can go ahead and add our component to our <code class="language-plaintext highlighter-rouge">welcome.blade.php</code>.</p>
+
+<p>Lastly, we’re going to use some “advanced” JavaScript in this tutorial. But, no need to worry, we’ll walk through it step-by-step. So, in the same directory as <code class="language-plaintext highlighter-rouge">modal.vue</code> we can add <code class="language-plaintext highlighter-rouge">modal.js</code>.</p>
+
+<p>To see this all running in the browser, we’ll need to run our Laravel Mix. If you’re following along, I recommend using <code class="language-plaintext highlighter-rouge">npm run watch</code> so your code changes automatically get compiled.</p>
+
+<p>With our Vue component ready, let’s add a custom color that we’ll end up needing for our modal background overlay to our Tailwind config.</p>
+
+<h3 id="the-time-has-come-to-configure-tailwind">The Time Has Come to Configure Tailwind</h3>
+<p>Can you believe that we’ve already made it through 3 other Tailwind tutorials on this blog before we had to edit the default settings? While the default settings have gotten us this far, we need to add a color to make sure our modal background has an opacity.</p>
+
+<p>To add this color, we can hop into our <code class="language-plaintext highlighter-rouge">tailwind.js</code> file that should be in the root directory of our project. Here we can see all sorts of options, but we just need to focus on the color variable. Inside this object, we can add this: <code class="language-plaintext highlighter-rouge">'transparent-black': 'rgba(0,0,0,.2)'</code>.</p>
+
+<p>Now, we need to make sure we run our Laravel Mix so this new color gets added to our Tailwind code. After you run that, you’ll be able to reference this color like you have any other Tailwind color. How cool is that?</p>
+
+<h3 id="super-spooky-advanced-js">Super Spooky Advanced JS</h3>
+<p>With all of our set up out of the way, we’re finally ready to start building this modal. Let’s get the “hard” stuff out of the way first by opening up our <code class="language-plaintext highlighter-rouge">modal.js</code> and creating a <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes">JavaScript Class</a> that we can use to create dynamic modals on the fly.</p>
+
+<p>To start, let’s think about what we’ll want our modal to do. We’ll obviously need to be able to show and dismiss it when needed. The header and body text should probably be customizable as well. Plus, it would be great if we could tell it what type of modal to be, like a succesful modal or an error one.</p>
+
+<p>With that in mind, we can come up with a JavaScript class that’ll be a representation of what our modal should be. Now, you might be asking yourself, “why don’t we just do all of this in our Vue component and be done?” And, you’re totally right! You could skip all of this entirely and just worry about passing events to your Vue component.</p>
+
+<p>However, I really like using classes for use-cases like this because it allows us to define an API that you, and your teammates, can use to interact with a component. So, instead of worrying about how to package up the correct data to send to your component, you can do something like this instead:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>vueModal().title('Hello World').success().show();
+</code></pre></div></div>
+<p>Pretty cool, right? With that little detour out of the way, let’s return to creating our class by just defining and exporting it, like so:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>let VueModal = class VueModal {
+  constructor() {
+
+  }
+
+};
+
+export default VueModal;
+</code></pre></div></div>
+<p>As you can see, we have a nice, simple JavaScript class. Thinking back to what we talked about earlier, we want our modal to have a header, a body, a “type”, and to be toggable. So, let’s define this in our class.</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>let VueModal = class VueModal {
+  constructor(header = null, body = null, type = null, visible = true) {
+    this.header = header || 'title';
+    this.body = body || 'text';
+    this.type = type || 'default';
+    this.visible = visible;
+  }
+
+};
+
+export default VueModal;
+</code></pre></div></div>
+<p>All we’ve done here is define the properties that we want to store on the class. We’ve also provided some handy default values in case we forget to pass in the data.</p>
+
+<p>Now, we’re going to add some “setters” so we can use that chainable API I previewed earlier. We want to create methods that’ll allow us to set all of the properties as we need to. So, those methods will look something like this:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>let VueModal = class VueModal {
+  constructor(header = null, body = null, type = null, visible = true) {
+    this.header = header || 'Title';
+    this.body = body || 'text';
+    this.type = type || 'default';
+    this.visible = visible;
+  }
+
+  title(header) {
+    this.header = header;
+
+    return this;
+  }
+
+  text(body) {
+    this.body = body;
+
+    return this;
+  }
+
+  appearance(type) {
+    this.type = type;
+
+    return this;
+  }
+
+  success() {
+    this.type = 'success';
+
+    return this;
+  }
+
+  error() {
+    this.type = 'error';
+
+    return this;
+  }
+
+  info() {
+    this.type = 'info';
+
+    return this;
+  }
+
+  warning() {
+    this.type = 'warning';
+
+    return this;
+  }
+
+  show() {
+    window.bus.$emit('show-modal', this);
+
+    return this;
+  }
+
+  dismiss() {
+    window.bus.$emit('dismiss-modal');
+
+    return this;
+  }
+};
+
+export default VueModal;
+</code></pre></div></div>
+<p>We’ve added a lot here, but really all that we’ve done is provided some handy methods that let us set our class’ values and define our modal on the fly. Take a look at the methods and see what we’re doing. In most cases, we’re either taking in a passed value and setting a property, or we’re setting it based on a hard-coded value.</p>
+
+<p>The only exceptions are <code class="language-plaintext highlighter-rouge">show()</code> and <code class="language-plaintext highlighter-rouge">dismiss()</code>. Here, we’re leveraging that event bus we created earlier to talk to our Vue component. When we create our Vue component, we’ll register some listeners that can respond to these messages.</p>
+
+<p>While this wraps up our modal class, you may still be a bit confused about how it’ll work. Don’t worry, as we build our Vue component, it’ll start making a lot more sense.</p>
+
+<h3 id="its-vue-time">It’s Vue Time</h3>
+<p>Our Vue component is going to be pretty simple because we’ve already done most of the work defining our data in our class. Let’s jump into our template and get this party started.</p>
+
+<p>Like any good modal we’ll need: a background overlay, the modal itself, a header, some body text, and a button. So, our template will look like this:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>&lt;template&gt;
+    &lt;div v-if="modal.visible" @click.self="dismissModal"&gt;
+        &lt;div&gt;
+            &lt;div&gt;
+                &lt;h1&gt;&lt;/h1&gt;
+            &lt;/div&gt;
+            &lt;div&gt;
+                &lt;p&gt;&lt;/p&gt;
+            &lt;/div&gt;
+            &lt;div&gt;
+                &lt;button :class="typeColor" @click="dismissModal"&gt;Ok&lt;/button&gt;
+            &lt;/div&gt;
+        &lt;/div&gt;
+    &lt;/div&gt;
+&lt;/template&gt;
+</code></pre></div></div>
+<p>Pretty simple, right? We’ve got our background wrapper, which we’re toggling based on whether <code class="language-plaintext highlighter-rouge">modal.visible</code> is true. Then, we’ve also bound a method on click that’ll dismiss the modal when only the background is clicked. We achieve that with the fancy click modifier <code class="language-plaintext highlighter-rouge">.self</code>. This lets our user interact with the modal without accidently dismissing it.</p>
+
+<p>In the modal itself, we’re really just displaying our modal attributes. Lastly, our button has the same <code class="language-plaintext highlighter-rouge">dimissModal</code> method binding as our wrapper plus some dynamic classes that change based on the type of modal we’re showing. All in all, not the most complicated component ever.</p>
+
+<p>Now that we’re all warmed up, let’s check out our component’s script section.</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>&lt;script&gt;
+    import VueModal from './modal.js';
+
+    export default {
+        data() {
+          return {
+              modal: {
+                  header: 'Header',
+                  body: 'Body',
+                  type: 'default',
+                  visible: false,
+              }
+          }
+        },
+        computed: {
+          typeColor() {
+              let color;
+
+              switch(this.modal.type) {
+                  case 'success':
+                      color = 'bg-green hover:bg-green-dark'
+                      break;
+                  case 'error':
+                      color = 'bg-red hover:bg-red-dark'
+                      break;
+                  case 'info':
+                      color = 'bg-blue hover:bg-blue-dark'
+                      break;
+                  case 'warning':
+                      color = 'bg-yellow hover:bg-yellow-dark'
+                      break;
+                  default:
+                      color = 'bg-teal hover:bg-teal-dark'
+              }
+
+              return color;
+          }
+        },
+        created() {
+            this.initModal();
+        },
+        methods: {
+          initModal() {
+              window.vueModal = (header = null, body = null, type = null, visible = true) =&gt; {
+                  return new VueModal(header, body, type, visible)
+              };
+
+              this.initListeners();
+          },
+          initListeners() {
+              window.bus.$on('show-modal', (modal) =&gt; {
+                  this.modal = modal;
+                  document.body.classList.add("overflow-hidden");
+              });
+
+              window.bus.$on('dismiss-modal', () =&gt; {
+                  this.modal.visible = false;
+                  document.body.classList.remove("overflow-hidden");
+              });
+          },
+          dismissModal() {
+              return vueModal().dismiss();
+          }
+        }
+    }
+&lt;/script&gt;
+</code></pre></div></div>
+<p>Let’s break all of this down from the top. At the beginning of this section, we’re importing our VueModal class so we can use is throughout our component. Next, we have our data. Here, we have a modal object where we’ve defined some default values for our modal. Using an object like this also makes it easier for us to overwrite these values with the values we instantiate in our VueModal class.</p>
+
+<p>Below our data, we have a computed property called typeColor. In here, we have a switch statement that matches our Tailwind styles to the type we define in our data. You earned some bonus points if you noticed that these type values correspond with what we defined in our class earlier.</p>
+
+<p>Next, we have our created lifecycle hook. In here, we’re calling the <code class="language-plaintext highlighter-rouge">initModal()</code> method. Moving right along to our methods object, we can see that the first method is in fact <code class="language-plaintext highlighter-rouge">initModal()</code>. Here’s the bread and butter of what we’ve been working towards.</p>
+
+<p>First, we’re binding a method to the window called <code class="language-plaintext highlighter-rouge">vueModal()</code>. This method accepts the values we need to pass to our VueModal class. Then, it instantiates a new instance of our VueModal class and passes in any of the values defined. Lastly, we then call our next method: <code class="language-plaintext highlighter-rouge">initListeners()</code>.</p>
+
+<p>Inside of <code class="language-plaintext highlighter-rouge">initListeners()</code>, we’ve created two listeners to respond to the events that we set up in our class earlier. In the show-modal listener, we’re setting our modal data to the passed in value, which was an instance of our class. Then, we’re using some vanilla JavaScript to add <code class="language-plaintext highlighter-rouge">.overflow-hidden</code> to the document’s body element. This prevents the page from scrolling when our modal is open. In our second listener, we’re simply hiding our modal and removing <code class="language-plaintext highlighter-rouge">.overflow-hidden</code> from the body.</p>
+
+<p>Finally, we have our last method <code class="language-plaintext highlighter-rouge">dismissModal()</code>. Here, we’re simply calling the <code class="language-plaintext highlighter-rouge">.dismiss()</code> method on the <code class="language-plaintext highlighter-rouge">vueModal()</code> we defined earlier when we initialized the modal.</p>
+
+<p>Whew, that was a good bit of code! But, now we have a nice modal component that we can trigger with a chainable API. Let’s run our Laravel Mix; grab that preview snippet from earlier, and run that through our console.
+<img src="/assets/images/posts/vue-tailwind-modal-1.png" alt="vue-tailwind-modal-1" />
+If everything went as planned, you should have started with an empty page, and then the modal should have appeared when you ran our snippet. Finally you can see how valuable using a class can be. We can trigger easy-to-understand, customizable modals from anywhere in our code!</p>
+
+<p>Feel free to take a break now and play around with our modal. When you’re ready to continue, we’ll finish our modal with some Tailwind classes.</p>
+
+<h3 id="sailing-off-with-tailwind">Sailing off with Tailwind</h3>
+<p>Let’s wrap this modal up with some nice Tailwind classes. To start, we’ll need our wrapper <code class="language-plaintext highlighter-rouge">div</code> to take up the whole page; center our modal in the middle, and have our custom background. We can do that by adding the following classes: <code class="language-plaintext highlighter-rouge">.pin</code> <code class="language-plaintext highlighter-rouge">.absolute</code> <code class="language-plaintext highlighter-rouge">.flex</code> <code class="language-plaintext highlighter-rouge">.items-center</code> <code class="language-plaintext highlighter-rouge">.justify-center</code> <code class="language-plaintext highlighter-rouge">.bg-transparent-black</code>. Most of this is pretty self-explanatory, but <code class="language-plaintext highlighter-rouge">.pin</code> is a little special. It applies the following css to an element:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>top: 0;
+right: 0;
+bottom: 0;
+left: 0;
+width: 100%;
+height: 100%;
+</code></pre></div></div>
+<p>For an absolutely positioned element, like our background, this is perfect for ensuring it fills the entire page in any situation.</p>
+
+<p>Onto the modal itself! We can give it some rounded corners, dynamic sizing, white background, and more with the following: <code class="language-plaintext highlighter-rouge">.bg-white</code>, <code class="language-plaintext highlighter-rouge">.rounded</code>, <code class="language-plaintext highlighter-rouge">.shadow</code>, <code class="language-plaintext highlighter-rouge">.p-8</code>, <code class="language-plaintext highlighter-rouge">.m-4</code>, <code class="language-plaintext highlighter-rouge">.max-w-lg</code>, <code class="language-plaintext highlighter-rouge">.max-h-full</code>, <code class="language-plaintext highlighter-rouge">.text-center</code>, <code class="language-plaintext highlighter-rouge">.overflow-y-scroll</code>.</p>
+
+<p>Our interior divs don’t need too much work. The first one can have a <code class="language-plaintext highlighter-rouge">.mb-4</code> for some spacing from the body, while the second one can have some extra spacing from the button with an <code class="language-plaintext highlighter-rouge">.mb-8</code>.</p>
+
+<p>Finally, our button just needs some spacing to round out the dynamic classes it’s receiving from our computed property. We’ll just add <code class="language-plaintext highlighter-rouge">.text-white</code>, <code class="language-plaintext highlighter-rouge">.py-2</code>, <code class="language-plaintext highlighter-rouge">.px-4</code>, and <code class="language-plaintext highlighter-rouge">.rounded</code>.</p>
+
+<p>Bada bing bada boom, we’ve got ourselves a fully styled modal component! Running our snippet from earlier, let’s see how it looks.
+<img src="/assets/images/posts/vue-tailwind-modal-2.png" alt="vue-tailwind-modal-2" /></p>
+
+<h3 id="thats-a-wrap">That’s a Wrap</h3>
+<p>Well isn’t that a thing of beauty. Good work coming along for this tutorial. I hope that I’ve been able to expose you to some patterns that’ll prove useful in your future projects!</p>]]></content><author><name>Harry Singh</name></author><summary type="html"><![CDATA[As I was hanging out with the Tailwind CSS Slack community the other day, I had a request to write a tutorial on how to make a Vue.js modal styled with Tailwind. That sounds like an excellent component to build, so let’s get to it.]]></summary></entry><entry><title type="html">How to build a Vue.js component with Tailwind in a Laravel project</title><link href="https://harrysingh.xyz/2023/12/06/vue-tailwind-laravel/" rel="alternate" type="text/html" title="How to build a Vue.js component with Tailwind in a Laravel project" /><published>2023-12-06T14:00:00-06:00</published><updated>2023-12-06T14:00:00-06:00</updated><id>https://harrysingh.xyz/2023/12/06/vue-tailwind-laravel</id><content type="html" xml:base="https://harrysingh.xyz/2023/12/06/vue-tailwind-laravel/"><![CDATA[<p>Let’s take our experiments installing Tailwind CSS and building a nav with it to the next level. Today, we’re going to be building a simple todo app with Vue.js, Laravel, and Tailwind. For the sake of time, we’re not going to persist any data. But fear not, that will certainly make an excellent part two.</p>
+
+<h3 id="set-up">Set Up</h3>
+<p>To get started, I’m going to use the Laravel CLI to scaffold a project by running <code class="language-plaintext highlighter-rouge">laravel new &lt;insert-your-project-name&gt;</code> inside the directory where we want to add our project. The Laravel CLI will take care of all the installation that we need for Laravel and Vue.</p>
+
+<p>For this simple project, let’s just use the default <code class="language-plaintext highlighter-rouge">welcome.blade.php</code> file to build the app. We’ll need to configure this template so our Vue code can hook in and work correctly. To start, add in the following <code class="language-plaintext highlighter-rouge">meta</code> tag to our <code class="language-plaintext highlighter-rouge">head</code> right below the other <code class="language-plaintext highlighter-rouge">meta</code> tags.</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>&lt;meta name="csrf-token" content=""&gt;
+</code></pre></div></div>
+<p>Now, we can delete the default styles and font import and move onto the body. Inside our <code class="language-plaintext highlighter-rouge">body</code> tag, we can see a bunch of generated code. Go ahead and replace it with the following:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>&lt;div id="app"&gt;
+    &lt;example-component&gt;&lt;/example-component&gt;
+&lt;/div&gt;
+
+&lt;!-- Scripts --&gt;
+&lt;script src=""&gt;&lt;/script&gt;
+</code></pre></div></div>
+<p>We can now see that we’ve got everything working correctly by checking out our screen.
+<img src="/assets/images/posts/vue-tailwind-laravel-1.png" alt="vue-tailwind-laravel-1" />
+As you can see, the example component is rendering correctly and we’re good to go. If you feel like you’ve missed something along the way, feel free to check out the GitHub repo for this project and follow along with my commits.</p>
+
+<p>Now to set up Tailwind, I’m going to assume that you’ve worked through my earlier article that explains how to set up Tailwind in a Laravel project. After we’ve done all that, let’s add one more line to our <code class="language-plaintext highlighter-rouge">welcome.blade.php</code> so we can use our Tailwind styles. In the head below the title tag, add this import: <link href="" rel="stylesheet" />.</p>
+
+<p>Finally, we’re ready to start developing!</p>
+
+<h3 id="our-vuejs-component">Our Vue.js Component</h3>
+<p>Let’s start our Vue development by taking out the scaffolding and adding our own components. In <code class="language-plaintext highlighter-rouge">resources/assets/js/components</code>, we can delete the <code class="language-plaintext highlighter-rouge">ExampleComponent.vue</code> and add our own file called <code class="language-plaintext highlighter-rouge">todo.vue</code>. Now, inside of <code class="language-plaintext highlighter-rouge">resources/assets/js/app.js</code> we can update the component import to reference our todo component instead of the example so it looks like this:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Vue.component('todo-component', require('./components/todo.vue'));
+</code></pre></div></div>
+<p>In our <code class="language-plaintext highlighter-rouge">welcome.blade.php</code>, we can update the Vue component to be our todo component like so:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>&lt;todo-component&gt;&lt;/todo-component&gt;
+</code></pre></div></div>
+<p>To see this in the browser, we’ll need to run our Laravel Mix. If you’re following along, I recommend using <code class="language-plaintext highlighter-rouge">npm run watch</code> so your code changes automatically get compiled.</p>
+
+<p>We’re going to try and keep this Vue component pretty simple, so we can focus on styling it with Tailwind. For our template, let’s use something that looks like this:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>&lt;template&gt;
+    &lt;div&gt;
+        &lt;div&gt;
+            &lt;h1&gt;Todo List&lt;/h1&gt;
+            &lt;div&gt;
+                &lt;input v-model="newTodo" placeholder="Add Todo"&gt;
+                &lt;button @click="add" :disabled="newTodo.length === 0"&gt;Add&lt;/button&gt;
+            &lt;/div&gt;
+        &lt;/div&gt;
+        &lt;div&gt;
+            &lt;div v-for="(todo, index) in todos" :key="todo.id"&gt;
+                &lt;p&gt;&lt;/p&gt;
+                &lt;button @click="updateStatus(todo)" v-text="todo.finished ? 'Not Done' : 'Done'"&gt;&lt;/button&gt;
+                &lt;button @click="remove(index)"&gt;Remove&lt;/button&gt;
+            &lt;/div&gt;
+        &lt;/div&gt;
+    &lt;/div&gt;
+&lt;/template&gt;
+</code></pre></div></div>
+<p>As you can see, this is a pretty simple component. We have a wrapper <code class="language-plaintext highlighter-rouge">div</code> like all Vue components, and then two child <code class="language-plaintext highlighter-rouge">div</code>s. In the first one we have our header, which includes our new todo <code class="language-plaintext highlighter-rouge">input</code>. We’ve bound that <code class="language-plaintext highlighter-rouge">input</code> to a <code class="language-plaintext highlighter-rouge">v-model</code> called <code class="language-plaintext highlighter-rouge">newTodo</code> and we’ve added a method to our <code class="language-plaintext highlighter-rouge">button</code> called <code class="language-plaintext highlighter-rouge">add</code> to submit a new todo. We’re also disabling the button when there’s no text in the <code class="language-plaintext highlighter-rouge">input</code> so we don’t add empty todos.</p>
+
+<p>In our bottom div, we’re looping through each of the todos that we’ve added and we’re displaying it’s text data as well as two buttons. The first button let’s us mark a todo as finished or not finished, while our second button removes the todo altogether. Pretty straightforward, right?</p>
+
+<p>Moving along, here’s the rest of our Vue component:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>&lt;script&gt;
+    export default{
+        data(){
+            return{
+                todos: [],
+                newTodo: '',
+                baseId: 1,
+            }
+        },
+        methods: {
+            add() {
+              const t = this;
+
+              let todo = {
+                id: t.baseId,
+                text: t.newTodo,
+                finished: false,
+              }
+
+              t.todos.push(todo);
+
+              t.newTodo = '';
+              t.baseId++;
+            },
+            updateStatus(todo) {
+              todo.finished = !todo.finished;
+            },
+            remove(index) {
+              const t = this;
+
+              t.todos.splice(index, 1);
+            }
+        }
+    }
+&lt;/script&gt;
+</code></pre></div></div>
+<p>Here we have the data that we’re using to manage our todos and the three methods that we saw were bound to our template. In our data, we have a todos array where we can store our todos; we have the newTodo that we bound to our <code class="language-plaintext highlighter-rouge">input</code>, and lastly, we have a baseId that we’re using to give each of our todos a fake “unique” id so Vue can keep track of them in the <code class="language-plaintext highlighter-rouge">v-for</code> loop.</p>
+
+<p>In our methods, we have <code class="language-plaintext highlighter-rouge">add()</code> which instantiates a new todo with the data from newTodo and the baseId, and pushes it into our todo array before restoring the state of our input to empty and incrementing our baseId. Then we have <code class="language-plaintext highlighter-rouge">updateStatus()</code> that just flips the finished state of the passed in todo. Finally, we have <code class="language-plaintext highlighter-rouge">remove()</code> which accepts the index of a todo and splices it out of the todos array.</p>
+
+<p>Running <code class="language-plaintext highlighter-rouge">npm run prod</code>, we can see what our todo component looks like in the browser.
+<img src="/assets/images/posts/vue-tailwind-laravel-2.png" alt="vue-tailwind-laravel-2" />
+As we use our component, we can see that our todos are getting added in the wrong order. Whoops! In our <code class="language-plaintext highlighter-rouge">add()</code> method, let’s change the <code class="language-plaintext highlighter-rouge">.push()</code> to use <code class="language-plaintext highlighter-rouge">.unshift()</code> instead. Now, it’s working as intended.</p>
+
+<p>While the functionality is all there, it sure is tough to look at. Let’s get ready to make it much more user-friendly with Tailwind CSS.</p>
+
+<h3 id="looking-good-with-tailwind">Looking Good with Tailwind</h3>
+<p>Here comes the fun part, making our todo app look awesome with Tailwind. To start, let’s begin in <code class="language-plaintext highlighter-rouge">welcome.blade.php</code> and position our todo component in the middle of the page.</p>
+
+<p>On the <code class="language-plaintext highlighter-rouge">div</code> with the id of app, we can add the following. <code class="language-plaintext highlighter-rouge">class="h-screen flex items-center justify-center"</code>. As you can see, this puts our component right in the middle of the page. Let’s add a background color and a font family to introduce some basic styles. On that same <code class="language-plaintext highlighter-rouge">div</code> add the <code class="language-plaintext highlighter-rouge">.bg-teal-lightest</code> and <code class="language-plaintext highlighter-rouge">.font-sans</code> classes. Our page is starting to look better already!
+<img src="/assets/images/posts/vue-tailwind-laravel-3.png" alt="vue-tailwind-laravel-3" />
+Now, we can focus on styling our component. Let’s start with some basic styles so we can see what we’re working with. Inside our <code class="language-plaintext highlighter-rouge">todo.vue</code> file on the wrapper div, we can add <code class="language-plaintext highlighter-rouge">.bg-white</code>, <code class="language-plaintext highlighter-rouge">.rounded</code>, <code class="language-plaintext highlighter-rouge">.shadow</code>, and <code class="language-plaintext highlighter-rouge">.p-6</code> classes to give ourselves a nice looking card.
+<img src="/assets/images/posts/vue-tailwind-laravel-4.png" alt="vue-tailwind-laravel-4" />
+With that white background, we can see how that <code class="language-plaintext highlighter-rouge">div</code> sits on the page. So, let’s give it a better width with these classes: <code class="language-plaintext highlighter-rouge">.m-4</code>, <code class="language-plaintext highlighter-rouge">.w-full</code>, <code class="language-plaintext highlighter-rouge">.lg:w-3/4</code>, and <code class="language-plaintext highlighter-rouge">.lg:max-w-lg</code>. As you can see, on mobile we’re letting the card take up the full width of the screen, and once we hit our large breakpoint we let it grow until it hits 75% of the screen or our max-width.
+<img src="/assets/images/posts/vue-tailwind-laravel-5.png" alt="vue-tailwind-laravel-5" />
+Let’s take care of the todo list itself, starting with the header. For the header wrapper <code class="language-plaintext highlighter-rouge">div</code>, we can just add a little spacing to the bottom with <code class="language-plaintext highlighter-rouge">.mb-4</code> to separate it from the list items. Then on the h1 we can just add a <code class="language-plaintext highlighter-rouge">.text-grey-darkest</code> so it doesn’t look so intense.</p>
+
+<p>Now for the fun part, our new todo input. For its wrapper <code class="language-plaintext highlighter-rouge">div</code>, we’ll make it flex by adding the .flex class and give it some spacing from the h1 with a <code class="language-plaintext highlighter-rouge">.mt-4</code>. On the input and the button we’re going to add a whole bunch of classes like so:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>&lt;input class="shadow appearance-none border rounded w-full py-2 px-3 mr-4 text-grey-darker" v-model="newTodo" placeholder="Add Todo"&gt;
+&lt;button class="flex-no-shrink p-2 border-2 rounded text-teal border-teal hover:text-white hover:bg-teal" @click="add" :disabled="newTodo.length === 0"&gt;Add&lt;/button&gt;
+</code></pre></div></div>
+<p>These classes are all pretty straight forward, but the ones that might trip you up are <code class="language-plaintext highlighter-rouge">.appearance-none</code> on the input and <code class="language-plaintext highlighter-rouge">.flex-no-shrink</code> on the button. <code class="language-plaintext highlighter-rouge">.appearance-none</code> is a reset class that removes any browser styling from a given element, while <code class="language-plaintext highlighter-rouge">.flex-no-shrink</code> is a flex helper that sets <code class="language-plaintext highlighter-rouge">flex-shrink</code> to 0 and prevents the button text from wrapping on smaller viewports. Pretty useful, right? Now, we’ve got ourselves a nicely styled header.
+<img src="/assets/images/posts/vue-tailwind-laravel-6.png" alt="vue-tailwind-laravel-6" />
+Before we style the todo items, this new styling is making it apparent that we forgot an empty state to let the user know that they don’t have any todos. So, let’s add that and style it too.</p>
+
+<p>Inside of our second <code class="language-plaintext highlighter-rouge">div</code> group and right below the <code class="language-plaintext highlighter-rouge">v-for</code>, we can add this:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>&lt;div v-show="todos.length === 0"&gt;
+    &lt;p class="w-full text-center text-grey-dark"&gt;There are no todos&lt;/p&gt;
+&lt;/div&gt;
+</code></pre></div></div>
+<p>Now our user can see that there are no todos right off the bat.
+<img src="/assets/images/posts/vue-tailwind-laravel-7.png" alt="vue-tailwind-laravel-7" />
+Finally, we just need to style our todo items. We can skip the wrapper <code class="language-plaintext highlighter-rouge">div</code> and jump directly to our <code class="language-plaintext highlighter-rouge">v-for</code>. Once again, we’re going to add a whole bunch of classes. So, let’s take a look at the finished result and then go over it.</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>&lt;div class="flex mb-4 items-center" v-for="(todo, index) in todos" :key="todo.id"&gt;
+    &lt;p class="w-full" :class="todo.finished ? 'line-through text-green' : 'text-grey-darkest'"&gt;&lt;/p&gt;
+    &lt;button class="flex-no-shrink p-2 ml-4 mr-2 border-2 rounded hover:text-white" :class="todo.finished ? 'text-grey border-grey hover:bg-grey' : 'text-green border-green hover:bg-green'" @click="updateStatus(todo)" v-text="todo.finished ? 'Not Done' : 'Done'"&gt;&lt;/button&gt;
+    &lt;button class="flex-no-shrink p-2 ml-2 border-2 rounded text-red border-red hover:text-white hover:bg-red" @click="remove(index)"&gt;Remove&lt;/button&gt;
+&lt;/div&gt;
+</code></pre></div></div>
+<p>It’s all pretty simple stuff, but we are doing one or two unique things. On the <code class="language-plaintext highlighter-rouge">v-for</code> div, we’re just making it a flex element, aligning the items in the center, and adding some spacing to the bottom.</p>
+
+<p>The p tag might look simple, but we’ve actually leveraged Vue’s dynamic classes to toggles our classes to show our users that they have completed a todo. In the unfinished state, we’re just coloring the text dark grey with <code class="language-plaintext highlighter-rouge">.text-grey-darkest</code>. But, in the finished state, we flip the color to green and add a strikethrough with <code class="language-plaintext highlighter-rouge">.text-green</code> and <code class="language-plaintext highlighter-rouge">.line-through</code>.</p>
+
+<p>For our buttons, we’re leveraging some of the classes we added to the “Add” button earlier, while also taking advantage of Vue’s dynamic classes. I’ll leave it as an exercise to you to parse out what exactly we’re doing here.</p>
+
+<p>Bada bing, bada boom we’ve finally finished styling our todo list!
+<img src="/assets/images/posts/vue-tailwind-laravel-8.png" alt="vue-tailwind-laravel-8" /></p>
+
+<h3 id="the-wrap-up">The Wrap Up</h3>
+<p>Whew! We certainly covered a lot here, and we’re really just getting started. In this post, we set up our Laravel, Vue, and Tailwind project; built a todo component with Vue.js, and then styled it with Tailwind. For our next post, we’ve certainly got a lot more to cover. We have to persist our todos to a database, and we should probably extract some of our Tailwind classes into our own stylesheets so we can manage this component a bit easier. Thanks for sticking with me throughout this tutorial. I hope it showed you some of the great things you can do with Tailwind, Vue, and Laravel.</p>]]></content><author><name>Harry Singh</name></author><summary type="html"><![CDATA[Let’s take our experiments installing Tailwind CSS and building a nav with it to the next level. Today, we’re going to be building a simple todo app with Vue.js, Laravel, and Tailwind. For the sake of time, we’re not going to persist any data. But fear not, that will certainly make an excellent part two.]]></summary></entry><entry><title type="html">Building a nav with Tailwind CSS</title><link href="https://harrysingh.xyz/2023/11/30/building-nav-tailwind/" rel="alternate" type="text/html" title="Building a nav with Tailwind CSS" /><published>2023-11-30T14:00:00-06:00</published><updated>2023-11-30T14:00:00-06:00</updated><id>https://harrysingh.xyz/2023/11/30/building-nav-tailwind</id><content type="html" xml:base="https://harrysingh.xyz/2023/11/30/building-nav-tailwind/"><![CDATA[<p>As I’ve watch the <a href="https://twitter.com/tailwindcss">Tailwind community</a> explode over the last few weeks, one of the most frequent questions I’ve seen is: “how do I build XYZ component with Tailwind?” It’s a legitimate question, but it kind of misses the point.</p>
+
+<p>Tailwind isn’t a collection of component recipies that we snap together to form an interface. Instead, it’s more like the underlying ingredients that we can then use to create any component we want.</p>
+
+<p>I’ll admit that it takes some time getting used to that idea. But, a little practice can go a long way towards helping us wrap our minds around it. So, let’s jump right in and see how we can use Tailwind to build a nav bar for ourselves.</p>
+
+<h3 id="the-html">The HTML</h3>
+<p>Before we do anything with styling, we need some HTML! Let’s start with a simple little <code class="language-plaintext highlighter-rouge">index.html</code> file.
+<img src="/assets/images/posts/tailwind-nav-1.png" alt="tailwind-nav-1" />
+To get up and running quickly with Tailwind, let’s just add it via its CDN.
+<img src="/assets/images/posts/tailwind-nav-2.png" alt="tailwind-nav-2" />
+Now, let’s create a simple little nav bar for us to style. We’ll start with a <code class="language-plaintext highlighter-rouge">nav</code> tag, and add two <code class="language-plaintext highlighter-rouge">div</code>s inside for the left and right side of our nav. Inside of the <code class="language-plaintext highlighter-rouge">div</code>s, we can add some <code class="language-plaintext highlighter-rouge">a</code> tags for our nav links.
+<img src="/assets/images/posts/tailwind-nav-3.png" alt="tailwind-nav-3" />
+At the end of all this, we finally have some HTML on our page for us to style.
+<img src="/assets/images/posts/tailwind-nav-4.png" alt="tailwind-nav-4" /></p>
+
+<h3 id="flex-that-nav">Flex That Nav</h3>
+<p>With our HTML ready to go, we can start adding some styles. Let’s start with our positioning. On our <code class="language-plaintext highlighter-rouge">nav</code> tag, we can add <code class="language-plaintext highlighter-rouge">.flex</code> and <code class="language-plaintext highlighter-rouge">.justify-between</code> to get our <code class="language-plaintext highlighter-rouge">div</code>s into the right place.
+<img src="/assets/images/posts/tailwind-nav-5.png" alt="tailwind-nav-5" />
+<img src="/assets/images/posts/tailwind-nav-6.png" alt="tailwind-nav-6" />
+This looks pretty good on a laptop, but what about mobile?</p>
+
+<p>Hmm, it needs a little work. With Tailwind, we can easily make our styles responsive with a mobile-first approach and some very handy responsive prefixes. For our existing classes, we can add the <code class="language-plaintext highlighter-rouge">sm</code> prefix to <code class="language-plaintext highlighter-rouge">.justify-between</code> like so <code class="language-plaintext highlighter-rouge">.sm:justify-between</code>. Here, we’re telling the nav to use <code class="language-plaintext highlighter-rouge">.justify-between</code> once we’ve reached the <code class="language-plaintext highlighter-rouge">sm</code> breakpoint.</p>
+
+<p>Now, we can add <code class="language-plaintext highlighter-rouge">.flex-col</code>, <code class="language-plaintext highlighter-rouge">.text-center</code>, <code class="language-plaintext highlighter-rouge">.sm:flex-row</code>, and <code class="language-plaintext highlighter-rouge">.sm:text-left</code> to our nav to round out our code. And volia! We have a responsive nav now.
+<img src="/assets/images/posts/tailwind-nav-7.png" alt="tailwind-nav-7" />
+<img src="/assets/images/posts/tailwind-nav-8.png" alt="tailwind-nav-8" /></p>
+
+<h3 id="styles-the-word">Style’s The Word</h3>
+<p>With our responsiveness down, let’s make our nav links look a little nicer. We can add <code class="language-plaintext highlighter-rouge">.text-2xl</code> to our home link to make it stand out, and <code class="language-plaintext highlighter-rouge">.text-lg</code> to our other links. We can also get rid of the default underlines by adding <code class="language-plaintext highlighter-rouge">.no-underline</code> to all of the links. To make them look even less like a default link, we can add <code class="language-plaintext highlighter-rouge">.text-grey-darkest</code> to each of the links and add <code class="language-plaintext highlighter-rouge">.font-sans</code> to our nav.</p>
+
+<p>Altogether, we now have some pretty good looking nav links.
+<img src="/assets/images/posts/tailwind-nav-9.png" alt="tailwind-nav-9" />
+Now, these wouldn’t really be good nav links if they didn’t have a hover effect, right? Tailwind makes this super easy too - just add a <code class="language-plaintext highlighter-rouge">hover:</code> prefix to any class, and that class will be applied on hover. So, for our nav links we can add <code class="language-plaintext highlighter-rouge">.hover:text-blue-dark</code> to add a hover effect and a pop of color.
+<img src="/assets/images/posts/tailwind-nav-10.png" alt="tailwind-nav-10" />
+<img src="/assets/images/posts/tailwind-nav-11.png" alt="tailwind-nav-11" /></p>
+
+<h3 id="spread-it-out">Spread It Out</h3>
+<p>Our nav is starting to feel a little cramped now, so let’s add some spacing to give it some room. For each of the links on the right hand side, let’s add <code class="language-plaintext highlighter-rouge">.ml-2</code> to spread them out a bit. On our home link’s parent <code class="language-plaintext highlighter-rouge">div</code>, we can add a <code class="language-plaintext highlighter-rouge">.mb-2</code> and a <code class="language-plaintext highlighter-rouge">.sm:mb-0</code> to add some spacing on mobile. Finally, to get everything away from the edges, we can add <code class="language-plaintext highlighter-rouge">.py-4</code> and <code class="language-plaintext highlighter-rouge">.px-6</code> to our <code class="language-plaintext highlighter-rouge">nav</code> tag.
+<img src="/assets/images/posts/tailwind-nav-12.png" alt="tailwind-nav-12" />
+<img src="/assets/images/posts/tailwind-nav-13.png" alt="tailwind-nav-13" />
+<img src="/assets/images/posts/tailwind-nav-14.png" alt="tailwind-nav-14" /></p>
+
+<h3 id="final-touches">Final Touches</h3>
+<p>With our links looking good and our positioning all squared away, it’s time for us to take this nav to the next level. To start, we’ll add <code class="language-plaintext highlighter-rouge">.bg-white</code> and <code class="language-plaintext highlighter-rouge">.shadow</code> to the <code class="language-plaintext highlighter-rouge">nav</code> tag. Now, it’s clear that our right side links are a little too high, so let’s also add <code class="language-plaintext highlighter-rouge">.sm:items-baseline</code> to the <code class="language-plaintext highlighter-rouge">nav</code> tag to bring them back down. Bada bing, bada boom we’ve got ourselves a nav bar.
+<img src="/assets/images/posts/tailwind-nav-15.png" alt="tailwind-nav-15" />
+<img src="/assets/images/posts/tailwind-nav-16.png" alt="tailwind-nav-16" />
+<img src="/assets/images/posts/tailwind-nav-17.png" alt="tailwind-nav-17" /></p>]]></content><author><name>Harry Singh</name></author><summary type="html"><![CDATA[As I’ve watch the Tailwind community explode over the last few weeks, one of the most frequent questions I’ve seen is: “how do I build XYZ component with Tailwind?” It’s a legitimate question, but it kind of misses the point.]]></summary></entry><entry><title type="html">Setting up Tailwind in a Laravel project</title><link href="https://harrysingh.xyz/2023/11/10/laravel-tailwind/" rel="alternate" type="text/html" title="Setting up Tailwind in a Laravel project" /><published>2023-11-10T14:00:00-06:00</published><updated>2023-11-10T14:00:00-06:00</updated><id>https://harrysingh.xyz/2023/11/10/laravel-tailwind</id><content type="html" xml:base="https://harrysingh.xyz/2023/11/10/laravel-tailwind/"><![CDATA[<p><a href="https://tailwindcss.com/">Tailwind</a> is the new CSS utility framework on the block, and it’s quickly become my favorite way to build an interface. Oftentimes, the hardest part of trying out a new framework, package, or language is getting set up.</p>
+
+<p>The folks building Tailwind have done an incredible job documenting the process, and it’s super easy to do. But, sometimes it’s still nice to see how someone else did it. So, let’s jump in and see how it’s done.</p>
+
+<h3 id="getting-started">Getting Started</h3>
+<p>To start, let’s assume we’re working with a brand new Laravel project. I won’t jump into how to set that up, but if you need a refresher you can reference the docs <a href="https://tailwindcss.com/docs/installation">here</a>. With Laravel all set up, let’s take a look at the Tailwind installation docs <a href="https://tailwindcss.com/docs/installation">here</a>.</p>
+
+<p>Looking at their docs, we can see that the easiest way to get the ball rolling is to just drop their CDN into your project and start coding. This is great for trying it out, but let’s up the ante and work it into our build processes.</p>
+
+<h3 id="installation">Installation</h3>
+<p>We can pull Tailwind into our project by using the following <code class="language-plaintext highlighter-rouge">NPM</code> or <code class="language-plaintext highlighter-rouge">Yarn</code> commands.</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code># Using npm
+npm install tailwindcss --save-dev
+# Using Yarn
+yarn add tailwindcss --dev
+</code></pre></div></div>
+<p>With the package pulled into our project, we can generate the Tailwind config file. We can call our config file anything we like, but let’s call it <code class="language-plaintext highlighter-rouge">tailwind.js</code>. Now, we can run the following command from the root of our project.</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>./node_modules/.bin/tailwind init tailwind.js
+</code></pre></div></div>
+<h3 id="configuration">Configuration</h3>
+<p>Bada bing bada boom, we’ve got ourselves a config file in the root of our project. Open it up and take a look around. As you can see, the Tailwind team has done an excellent job of documenting and explaining everything that the config file does. You can add colors, adjust your breakpoints, refine your spacing, and so much more. Just think of how much easier it’s going to be to keep all of your styles consistent!</p>
+
+<p>Let’s hop on over now to our Sass directory found at <code class="language-plaintext highlighter-rouge">resources/assets/sass</code>. Here we can see that Laravel has included some default files out of the box. You can go ahead and delete them if you’d like.</p>
+
+<h3 id="saas-setup">SaaS Setup</h3>
+<p>In that directory, we can now create our <code class="language-plaintext highlighter-rouge">index.sass</code> file (you can call your file anything you like - just don’t call it late for dinner!). Here, we’re going to copy in the following code from the Tailwind docs.</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>/**
+ * This injects Tailwind's base styles, which is a combination of
+ * Normalize.css and some additional base styles.
+ *
+ * You can see the styles here:
+ * https://github.com/tailwindcss/tailwindcss/blob/master/css/preflight.css
+ */
+@tailwind preflight;
+
+/**
+ * Here you would add any of your custom component classes; stuff that you'd
+ * want loaded *before* the utilities so that the utilities could still
+ * override them.
+ *
+ * Example:
+ *
+ * .btn { ... }
+ * .form-input { ... }
+ *
+ * Or if using a preprocessor:
+ *
+ * @import "components/buttons";
+ * @import "components/forms";
+ */
+
+/**
+ * This injects all of Tailwind's utility classes, generated based on your
+ * config file.
+ */
+@tailwind utilities;
+
+/**
+ * Here you would add any custom utilities you need that don't come out of the
+ * box with Tailwind.
+ *
+ * Example :
+ *
+ * .bg-pattern-graph-paper { ... }
+ * .skew-45 { ... }
+ *
+ * Or if using a preprocessor..
+ *
+ * @import "utilities/background-patterns";
+ * @import "utilities/skew-transforms";
+ */
+</code></pre></div></div>
+<p>Notice that they have semicolons at the end of their <code class="language-plaintext highlighter-rouge">@tailwind</code> imports. Go ahead and remove them. At this point, if you’re using PHPStorm, you might notice that your file structure has a bunch of red lines all over it. Don’t worry about them, you can ignore them or find a way to turn them off. If you figure out how to turn them off, write a tutorial for me to follow ;).</p>
+
+<p>This is now our master Sass file where we can import our custom Sass, and export to our <code class="language-plaintext highlighter-rouge">public/css</code> directory in our build process. When you import your custom Sass, it’s important to follow the order of imports that they specify in order to avoid any issues with your CSS getting overwritten.</p>
+
+<h3 id="build-process">Build Process</h3>
+<p>Finally, we’re ready to add Tailwind to our build process. Let’s open up our <code class="language-plaintext highlighter-rouge">webpack.mix.js</code> file. At the top, right below <code class="language-plaintext highlighter-rouge">let mix = require('laravel-mix');</code> let’s add <code class="language-plaintext highlighter-rouge">let tailwindcss = require('tailwindcss');</code>.</p>
+
+<p>Now, in our <code class="language-plaintext highlighter-rouge">mix</code> we can update the default <code class="language-plaintext highlighter-rouge">.sass</code> options like so (note: if you didn’t name your master Sass file <code class="language-plaintext highlighter-rouge">index.sass</code> make sure you update it here):</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>mix.js('resources/assets/js/app.js', 'public/js')
+    .sass('resources/assets/sass/index.sass', 'public/css/app.css')
+    .options({
+      processCssUrls: false,
+      postCss: [ tailwindcss('./tailwind.js') ],
+    });
+</code></pre></div></div>
+<p>Currently, there’s an unresolved issue with one of Mix’s dependencies. So, to use Sass with Tailwind we’re disabling processCssUrls. For more info on what that means, check out the Mix docs <a href="https://github.com/JeffreyWay/laravel-mix/blob/master/docs/css-preprocessors.md#css-url-rewriting">here</a>.</p>
+
+<p>Finally, we can now run <code class="language-plaintext highlighter-rouge">npm run prod</code> to compile Tailwind into our CSS.</p>
+
+<h3 id="using-tailwind">Using Tailwind</h3>
+<p>In your blade files, you can now add <code class="language-plaintext highlighter-rouge">&lt;link href="" rel="stylesheet"&gt;</code> in your <code class="language-plaintext highlighter-rouge">head</code> tag and start using Tailwind to rapidly build responsive UIs.</p>
+
+<h3 id="thats-a-wrap">That’s a Wrap</h3>
+<p>I hope this little walkthrough went smoothly for you, and that you really enjoy using Tailwind like I have. If you do end up loving it, make sure you share it with your friends and throw a thank you over to the awesome Tailwind team on <a href="https://twitter.com/tailwindcss">Twitter</a>. And until next time, happy coding!</p>]]></content><author><name>Harry Singh</name></author><summary type="html"><![CDATA[Tailwind is the new CSS utility framework on the block, and it’s quickly become my favorite way to build an interface. Oftentimes, the hardest part of trying out a new framework, package, or language is getting set up.]]></summary></entry><entry><title type="html">What’s in the .git folder</title><link href="https://harrysingh.xyz/2023/05/21/looking-into-git-folder/" rel="alternate" type="text/html" title="What’s in the .git folder" /><published>2023-05-21T16:56:42-05:00</published><updated>2023-05-21T16:56:42-05:00</updated><id>https://harrysingh.xyz/2023/05/21/looking-into-git-folder</id><content type="html" xml:base="https://harrysingh.xyz/2023/05/21/looking-into-git-folder/"><![CDATA[<p>Each of the dozens of git repos on your machine contains a .git folder. But you may have never thought about the details of its contents. You know that somehow the folder holds the history of every version of every file ever committed to the repository. You just don’t know how.</p>
+
+<p>The contents are less mysterious than you think. For obvious reasons, git optimizes the contents of the .git folder for size and speed. So you can’t browse into it and see your files. The object files are all named after their guid, and the data is <a href="https://zlib.net/">zlib</a> compressed. But the structure and organization is documented and understandable.</p>
+
+<p><img src="/assets/images/posts/git.png" alt="git" /></p>
+
+<p>I’m not going to go into a full explanation of the files here. Others, like Rob Richardson (<a href="https://robrich.org/">blog</a>, <a href="https://twitter.com/rob_rich">twitter</a>) have explained it better than I ever will. It was Rob’s talk at CodeMash that helped me understand how the contents of the .git folder worked. I just created a graphic from the info he shared. Additional details are available at <a href="https://gitready.com/advanced/2009/03/23/whats-inside-your-git-directory.html">GitReady.com</a>.</p>
+
+<p>I’ll simply summarize by saying that the files can be grouped into five categories:</p>
+
+<ol>
+  <li><strong>Objects</strong> - (blue)These represent the files and changes. Objects can be further divided into commits, trees, and blobs.</li>
+  <li><strong>Refs</strong> - (red)These are human-readable files that organize the objects</li>
+  <li><strong>Logs</strong> - (green)These are used to quickly generate logs displayed to the user.</li>
+  <li><strong>Config</strong> - (light gray)There are files used to config git’s behavior</li>
+  <li><strong>Temp</strong> - (gray)These are temporary files for information that git needs to hold between command-line actions.</li>
+</ol>]]></content><author><name>Harry Singh</name></author><summary type="html"><![CDATA[Each of the dozens of git repos on your machine contains a .git folder. But you may have never thought about the details of its contents. You know that somehow the folder holds the history of every version of every file ever committed to the repository. You just don’t know how.]]></summary></entry><entry><title type="html">Building a calendar with Vue.js</title><link href="https://harrysingh.xyz/2023/04/10/building-calendar-with-vue/" rel="alternate" type="text/html" title="Building a calendar with Vue.js" /><published>2023-04-10T15:00:00-05:00</published><updated>2023-04-10T15:00:00-05:00</updated><id>https://harrysingh.xyz/2023/04/10/building-calendar-with-vue</id><content type="html" xml:base="https://harrysingh.xyz/2023/04/10/building-calendar-with-vue/"><![CDATA[<p>Last week, Patrick walked us through some high-level considerations to take into account when <a href="https://metricloop.com/blog/building-a-calendar-for-a-web-app-without-reinventing-the-wheel">building a calendar</a>. So this week, let’s take a stab at implementing a calendar with Vue.js. Because there is so much that goes into building a calendar, we’ll focus our efforts this week on creating a simple Vue component that can display a month of dates organized by the days of the week, toggle between different months, and show us what the current date is. Basically something like this:</p>
+
+<p><img src="/assets/images/posts/vue-calendar-1.png" alt="vue-calendar" /></p>
+
+<h2 id="big-picture">Big Picture</h2>
+<p>Before we dive into the code, let’s take a second to figure out what we’ll need to do in order to build a working calendar. First, we’ll need to figure out what the current date is, so we can initialize all of the other data. Then, we’ll need to use the current date to figure out what the current month is, how many days it has, what the current year is, and the weekday that the first day of the month fell on. Next, we’ll need a way to store our initial date values, so we can correctly mark our current date. Finally, we’ll need a way to increment and decrement the month and have all of our data adjust to reflect the new context. Our checklist for development would look something like this:</p>
+
+<ol>
+  <li>Find the current date</li>
+  <li>Find the current month and year</li>
+  <li>Determine the number of days in the month and the weekday that the first day of the month fell on</li>
+  <li>Store the initial info for reference later</li>
+  <li>Increment and decrement our month to change context
+Somewhere out there, a project manager just <a href="https://youtu.be/OfUV-F9jFro?t=1m31s">got their wings</a>.</li>
+</ol>
+
+<h2 id="set-up">Set Up</h2>
+<p>Since this is a JavaScript project that deals with dates, we’ll be making heavy use of the fantastic <a href="http://momentjs.com/">Moment.js</a> library. You can add it to your project with NPM by running <code class="language-plaintext highlighter-rouge">npm install moment</code>. Apart from that, we’ll just be using a simple Vue component, called <code class="language-plaintext highlighter-rouge">calendar.vue</code>, that you can add to any project you like.</p>
+
+<h2 id="the-calendar">The Calendar</h2>
+<h3 id="task-1">Task 1</h3>
+<p>Let’s start this component by taking a look at our <code class="language-plaintext highlighter-rouge">&lt;script&gt;</code> section within our <code class="language-plaintext highlighter-rouge">calendar.vue</code> file. At the top, right before our <code class="language-plaintext highlighter-rouge">export default</code>, let’s <code class="language-plaintext highlighter-rouge">import</code> Moment.js so we can use it in our component. Moving on to our <code class="language-plaintext highlighter-rouge">export default</code>, let’s setup our component’s <code class="language-plaintext highlighter-rouge">data</code>. Based on the requirements we outlined, we’ll need something to store our initial date, the changing date context, and the days of the week. Putting that together, we’ll end up with this:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>data(){
+    return{
+        today: moment(),
+        dateContext: moment(),
+        days: ['S', 'M', 'T', 'W', 'T', 'F', 'S']
+    }
+},
+</code></pre></div></div>
+<p>As you can see, we’re using <code class="language-plaintext highlighter-rouge">moment()</code> to set both <code class="language-plaintext highlighter-rouge">today</code> and <code class="language-plaintext highlighter-rouge">dateContext</code> to the current moment - pun very intended - and then we just have an array of <code class="language-plaintext highlighter-rouge">days</code> that will make our HTML a bit easier to read. This takes care of our first task, and when you check the component out in your Vue DevTools you’ll see that everything is setup correctly.</p>
+<h3 id="task-2">Task 2</h3>
+<p>Now, let’s find the current month and year to take care of our second task. From this point on, we’ll be dealing with computed properties. So, let’s set one up for <code class="language-plaintext highlighter-rouge">month</code> and another for <code class="language-plaintext highlighter-rouge">year</code>.</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>computed: {
+    year: function () {
+
+    },
+    month: function () {
+
+    }
+}
+</code></pre></div></div>
+<p>Now we can use Moment.js to format our <code class="language-plaintext highlighter-rouge">dateContext</code> to give us the results we want.</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>computed: {
+    year: function () {
+        var t = this;
+        return t.dateContext.format('Y');
+    },
+    month: function () {
+        var t = this;
+        return t.dateContext.format('MMMM');
+    }
+}
+</code></pre></div></div>
+<p>If you check your Vue DevTools now, you’ll see that our computed properties are displaying the year and month for our <code class="language-plaintext highlighter-rouge">dateContext</code>. With task 2 taken care of, let’s move on to number 3.</p>
+<h3 id="task-3">Task 3</h3>
+<p>For task 3, we’ll continue to make use of our computed properties, so let’s set up two properties called <code class="language-plaintext highlighter-rouge">daysInMonth</code>, <code class="language-plaintext highlighter-rouge">currentDate</code> and <code class="language-plaintext highlighter-rouge">firstDayOfMonth</code>.</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>computed: {
+    //Previous Code Above
+    daysInMonth: function () {
+
+    },
+    currentDate: function () {
+
+    },
+    firstDayOfMonth: function () {
+
+    }
+}
+</code></pre></div></div>
+<p>Once again, with Moment’s help this will be pretty easy. For <code class="language-plaintext highlighter-rouge">daysInMonth</code> Moment has a method called <code class="language-plaintext highlighter-rouge">daysInMonth()</code> that we can use. With that taken care of, let’s break down <code class="language-plaintext highlighter-rouge">currentDate</code> and <code class="language-plaintext highlighter-rouge">firstDayOfMonth</code>. We’ll set up <code class="language-plaintext highlighter-rouge">currentDate</code> so it give us the actual integer date for our <code class="language-plaintext highlighter-rouge">dateContext</code>. Then we’ll leverage this inside of <code class="language-plaintext highlighter-rouge">firstDayOfMonth</code> to find when the first day of the month was and determine its weekday.</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>computed: {
+    //Previous Code Above
+    daysInMonth: function () {
+        var t = this;
+        return t.dateContext.daysInMonth();
+    },
+    currentDate: function () {
+        var t = this;
+        return t.dateContext.get('date');
+    },
+    firstDayOfMonth: function () {
+        var t = this;
+        var firstDay = moment(t.dateContext).subtract((t.currentDate - 1), 'days');
+        return firstDay.weekday();
+    }
+}
+</code></pre></div></div>
+<p>Look how simple Moment.js makes this! <code class="language-plaintext highlighter-rouge">dayInMonth</code> and <code class="language-plaintext highlighter-rouge">currentDate</code> are taken care of for us by Moment, so we can focus our attention on parsing out <code class="language-plaintext highlighter-rouge">firstDayOfMonth</code>. Inside, we have a variable called <code class="language-plaintext highlighter-rouge">firstDay</code> that subtracts the <code class="language-plaintext highlighter-rouge">currentDate</code>’s number of days, minus 1, from the <code class="language-plaintext highlighter-rouge">dateContext</code>. We subtract an extra day from the <code class="language-plaintext highlighter-rouge">currentDate</code> because it includes the dateContext and we want to know the days preceding dateContext. Finally, Moment has a method that finds the weekday for us, so we’ll <code class="language-plaintext highlighter-rouge">return</code> that to get the first day of the month.</p>
+<h3 id="task-4">Task 4</h3>
+<p>If you’ve been paying attention, you’ll notice that we’ve been using <code class="language-plaintext highlighter-rouge">dateContext</code> instead of <code class="language-plaintext highlighter-rouge">today</code> in our computed properties. We want to keep them separate because we’ll be changing the <code class="language-plaintext highlighter-rouge">dateContext</code> to update our computed properties when we increment/decrement the month, and if we don’t have <code class="language-plaintext highlighter-rouge">today</code> then we lose our initial date, which we need to display the current date to the user. So let’s use some more computed properties to persist our initial date.</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>computed: {
+    //Previous Code Above
+   initialDate: function () {
+        var t = this;
+        return t.today.get('date');
+    },
+    initialMonth: function () {
+        var t = this;
+        return t.today.format('MMMM');
+    },
+    initialYear: function () {
+        var t = this;
+        return t.today.format('Y');
+    }
+}
+</code></pre></div></div>
+<p>Here we’re just using Moment to format <code class="language-plaintext highlighter-rouge">today</code> into its date, month, and year. We’ll use these later in the template to highlight today’s date.</p>
+<h3 id="task-5">Task 5</h3>
+<p>Finally, we’re ready to increment and decrement the month to change our calendar’s context. Once again, Moment makes this trivially easy for us to do.</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>methods: {
+    addMonth: function () {
+        var t = this;
+        t.dateContext = moment(t.dateContext).add(1, 'month');
+    },
+    subtractMonth: function () {
+        var t = this;
+        t.dateContext = moment(t.dateContext).subtract(1, 'month');
+    }
+}
+</code></pre></div></div>
+<p>As you can see, in both methods we are overwriting the current <code class="language-plaintext highlighter-rouge">dateContext</code> with an appropriate addition or subtraction based on the <code class="language-plaintext highlighter-rouge">dateContext</code>. And since we made use of <code class="language-plaintext highlighter-rouge">dateContext</code> in our computed properties, everything will update to reflect the new month.</p>
+<h3 id="the-template">The Template</h3>
+<p>With our data, computed properties, and methods finished, we can now put them to good use in our template.</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>&lt;template&gt;
+    &lt;div class="calendar"&gt;
+        &lt;div class="calendar-header"&gt;
+            &lt;i class="fa fa-fw fa-chevron-left" @click="subtractMonth"&gt;&lt;/i&gt;
+            &lt;h4&gt;&lt;/h4&gt;
+            &lt;i class="fa fa-fw fa-chevron-right" @click="addMonth"&gt;&lt;/i&gt;
+        &lt;/div&gt;
+        &lt;ul class="weekdays"&gt;
+            &lt;li v-for="day in days"&gt;&lt;/li&gt;
+        &lt;/ul&gt;
+        &lt;ul class="dates"&gt;
+            &lt;li v-for="blank in firstDayOfMonth"&gt; &lt;/li&gt;
+            &lt;li v-for="date in daysInMonth"
+                :class="{'current-day': date == initialDate &amp;&amp; month == initialMonth &amp;&amp; year == initialYear}"&gt;;
+                &lt;span&gt;&lt;/span&gt;
+           &lt;/li&gt;
+        &lt;/ul&gt;
+    &lt;/div&gt;
+&lt;/template&gt;
+</code></pre></div></div>
+<p>This might look like a lot, but let’s break it down step-by-step. At the top, we have our <code class="language-plaintext highlighter-rouge">calendar-header</code>. Here we have our month incrementer and decrementer with the month and year in between them. Next we have weekdays, where we’re using a <code class="language-plaintext highlighter-rouge">v-for</code> to loop through all of the days in our <code class="language-plaintext highlighter-rouge">days</code> array. This isn’t strictly necessary - you could hardcode it in - but I find that it keeps the template from becoming overwhelming. Finally, we have dates - the meat and potatoes of our calendar. Within the ul we have two different <code class="language-plaintext highlighter-rouge">v-fors</code>. The first loops through the firstDayOfMonth so we can get the spacing correct for the actual dates. Then we have another <code class="language-plaintext highlighter-rouge">v-for</code> that loops through the <code class="language-plaintext highlighter-rouge">daysInMonth</code> to actually display the dates on the page. The last thing to note is our dynamic class <code class="language-plaintext highlighter-rouge">current-day</code>. Here we’re using the initial dates to ensure that we only add this class when it is the correct day.</p>
+<h3 id="conclusion">Conclusion</h3>
+<p>There you have it! Your very own Vue.js calendar. Now there are certainly lots of plugins and libraries out there that could have done this for us. But with your own custom component you have the flexibility to add in as many additional features as you need, without carrying the overhead of features you’ll never use. Until next time, happy coding!</p>]]></content><author><name>Harry Singh</name></author><summary type="html"><![CDATA[Last week, Patrick walked us through some high-level considerations to take into account when building a calendar. So this week, let’s take a stab at implementing a calendar with Vue.js. Because there is so much that goes into building a calendar, we’ll focus our efforts this week on creating a simple Vue component that can display a month of dates organized by the days of the week, toggle between different months, and show us what the current date is. Basically something like this:]]></summary></entry><entry><title type="html">How to make API Calls with Vuex</title><link href="https://harrysingh.xyz/2023/04/09/making-api-call-in-vuex/" rel="alternate" type="text/html" title="How to make API Calls with Vuex" /><published>2023-04-09T15:00:00-05:00</published><updated>2023-04-09T15:00:00-05:00</updated><id>https://harrysingh.xyz/2023/04/09/making-api-call-in-vuex</id><content type="html" xml:base="https://harrysingh.xyz/2023/04/09/making-api-call-in-vuex/"><![CDATA[<p>Today I’ll explain how to make API calls with Vuex. While Vuex does a great job of keeping your data synchronized across the frontend of your application, you’ll need to talk with a database at some point to make sure that any changes will be persisted permanently. Fortunately, Vue makes it very easy for us to work with an API, especially when we use Vue-resource. While Vue-resource is <a href="https://medium.com/the-vue-point/retiring-vue-resource-871a82880af4#.xs5m1t7e6">no longer part of the official Vue ecosystem</a>, I think it is still an easy way to get up and going with APIs. But regardless of the API wrapper you choose to use, the concepts I describe here will still be applicable to your app.</p>
+
+<h2 id="the-big-picture">The Big Picture</h2>
+<p>As we know from the <a href="https://vuex.vuejs.org/en">Vuex docs</a>, Vuex works like this:</p>
+
+<p><img src="/assets/images/posts/api-call-vuex-1.png" alt="api-call-vuex-1" /></p>
+
+<p>Right away, we can see that the Vuex team has already told us to interact with a backend API via Actions. This is because Actions can be asynchronous, while Mutations must be synchronous. In this structure, it makes sense that Actions should be the place for API calls because they can wait for the data before committing to a Mutation. While this may seem a tad confusing conceptually, the big takeaway is to remember to only handle API calls in your Actions.</p>
+
+<h2 id="api-setup">API Setup</h2>
+<p>Before we begin, I’d like to say thank you to <a href="https://github.com/vuejs/vuex/issues/85">jonagoldman</a> on GitHub for outlining this setup. Now, let’s jump into the code and see how to set up API calls in our Actions. As usual, I’ll be working with a Laravel Spark project, but feel free to set up your directories as you see fit.</p>
+
+<p><img src="/assets/images/posts/api-call-vuex-2.png" alt="api-call-vuex-2" /></p>
+
+<p>As you can see above, I have a <code class="language-plaintext highlighter-rouge">vuex</code> directory with two sub-directories for <code class="language-plaintext highlighter-rouge">modules</code> and <code class="language-plaintext highlighter-rouge">utils</code> as well as my top-level <code class="language-plaintext highlighter-rouge">store.js</code>. Inside of the <code class="language-plaintext highlighter-rouge">utils</code> directory, there is a file called <code class="language-plaintext highlighter-rouge">api.js</code>. This is a little helper file where I’ve wrapped some <code class="language-plaintext highlighter-rouge">vue-resource</code> calls within HTTP actions.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>//resources/assets/js/vuex/utils/api.js
+
+import Vue from 'vue'
+
+export default {
+    get(url, request) {
+        return Vue.http.get(url, request)
+            .then((response) =&gt; Promise.resolve(response.body.data))
+            .catch((error) =&gt; Promise.reject(error));
+    },
+    post(url, request) {
+        return Vue.http.post(url, request)
+            .then((response) =&gt; Promise.resolve(response))
+            .catch((error) =&gt; Promise.reject(error));
+    },
+    patch(url, request) {
+        return Vue.http.patch(url, request)
+            .then((response) =&gt; Promise.resolve(response))
+            .catch((error) =&gt; Promise.reject(error));
+    },
+    delete(url, request) {
+        return Vue.http.delete(url, request)
+            .then((response) =&gt; Promise.resolve(response))
+            .catch((error) =&gt; Promise.reject(error));
+    }
+}
+</code></pre></div></div>
+
+<p>Now, within an <code class="language-plaintext highlighter-rouge">actions.js</code> file, you can import <code class="language-plaintext highlighter-rouge">api.js</code> and use <code class="language-plaintext highlighter-rouge">api.get(url, request)</code> to make a request. This isn’t a required step, but I find that it keeps my Actions more concise and readable. Plus, if I ever wanted to stop using <code class="language-plaintext highlighter-rouge">vue-resource</code>, I’d just need to edit this file and my Actions would be fine.</p>
+
+<p>With that out of the way, let’s hop into an <code class="language-plaintext highlighter-rouge">actions.js</code> file and see what your API calls can look like. Side note: your <code class="language-plaintext highlighter-rouge">actions.js</code> file can be for your Modules or for your top-level store, just remember to do your imports correctly.</p>
+
+<h2 id="api-in-actions">API in Actions</h2>
+<p>Here’s what a fully fleshed out <code class="language-plaintext highlighter-rouge">actions.js</code> might look like:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>import api from '../../utils/api.js'
+
+const actions = {
+    getIncrementers (context) =&gt; {
+        return api.get('/incrementers')
+            .then((response) =&gt; context.commit('GET_INCREMENTERS', response))
+            .catch((error) =&gt; context.commit('API_FAILURE', error));
+    },
+    createIncrementer (context, data) =&gt; {
+        return api.post(data.url, data.request)
+            .then((response) =&gt; context.commit('CREATE_INCREMENTER', response))
+            .catch((error) =&gt; context.commit('API_FAILURE', error));
+    },
+    updateIncrementer (context, data) =&gt; {
+        return api.patch(data.url, data.request)
+            .then((response) =&gt; context.commit('UPDATE_INCREMENTER', response))
+            .catch((error) =&gt; context.commit('API_FAILURE', error));
+    },
+    deleteIncrementer (context, url) =&gt; {
+        return api.delete(url)
+            .then((response) =&gt; context.commit('DELETE_INCREMENTER', response))
+            .catch((error) =&gt; context.commit('API_FAILURE', error));
+    }
+};
+
+export default actions
+</code></pre></div></div>
+<p>As you can see, we’ve used each of our HTTP actions from <code class="language-plaintext highlighter-rouge">api.js</code> - with some slight variations - to give you a complete picture of what you can do. Each of the variations are pretty self-explanatory, but let’s run through them. In the <code class="language-plaintext highlighter-rouge">getIncrementers</code> function, you can see that we’ve hard-coded in the url. Typically, I prefer to pass in my url when I map the Action to my component, so I can handle any dynamic urls. But if the url is as simple as <code class="language-plaintext highlighter-rouge">/incrementers</code>, then you can probably get away with leaving it hard-coded. Now if you look at the rest of the function, you can see that since <code class="language-plaintext highlighter-rouge">api.get()</code> returns a Promise we can then chain on our Mutation commits. So if the API call succeeds, I’m committing to the <code class="language-plaintext highlighter-rouge">GET_INCREMENTS</code> Mutation and passing along the API response as well. And if the API call fails, I’m performing a different commit to <code class="language-plaintext highlighter-rouge">API_FAILURE</code> with the error so I can let the user know that something went wrong.</p>
+
+<p>In the createIncrementer and updateIncrementer functions, we’re handling things slightly differently. Since we need to pass some data to the API, we’ve included a data Object in the Action. From the data Object I can then get the url and the request and pass it to the API. Lastly, in the deleteIncrementer function, you can see that we’re just passing in a url for the API to reference. This is how I typically handle the dynamic urls I was talking about earlier.</p>
+
+<h2 id="the-wrap-up">The Wrap Up</h2>
+<p>And there you have it! A quick look at how to get up and running with APIs and Vuex. With this in hand, and our articles on <a href="https://metricloop.com/blog/how-to-set-up-modules-in-vuex">Modules</a> and setting up <a href="https://metricloop.com/blog/how-to-use-vuex-in-a-laravel-spark-project">Vuex</a>, you should be well on your way to building some awesome apps with Vuex.</p>]]></content><author><name>Harry Singh</name></author><summary type="html"><![CDATA[Today I’ll explain how to make API calls with Vuex. While Vuex does a great job of keeping your data synchronized across the frontend of your application, you’ll need to talk with a database at some point to make sure that any changes will be persisted permanently. Fortunately, Vue makes it very easy for us to work with an API, especially when we use Vue-resource. While Vue-resource is no longer part of the official Vue ecosystem, I think it is still an easy way to get up and going with APIs. But regardless of the API wrapper you choose to use, the concepts I describe here will still be applicable to your app.]]></summary></entry><entry><title type="html">Scripting the dotnet CLI for Rapid Test Setup</title><link href="https://harrysingh.xyz/2022/08/15/test-solution-with-dotnet-cli/" rel="alternate" type="text/html" title="Scripting the dotnet CLI for Rapid Test Setup" /><published>2022-08-15T16:56:42-05:00</published><updated>2022-08-15T16:56:42-05:00</updated><id>https://harrysingh.xyz/2022/08/15/test-solution-with-dotnet-cli</id><content type="html" xml:base="https://harrysingh.xyz/2022/08/15/test-solution-with-dotnet-cli/"><![CDATA[<p>From time to time, I need to create a small C# or F# solution to experiment with a code feature or a library function. Often, what I want to do is create a simple console application and a unit test project that references the console application. This isn’t hard to do in Visual Studio, but it feels like it takes too many steps.</p>
+
+<p>Recently, I read a fantastic new book called Essential F#, by Ian Russel. (You can get <a href="https://leanpub.com/essential-fsharp">it here</a>) In it, he showed that you could quickly create the setup I described above with the dotnet CLI. It was an idea so brilliantly simple that I’m jealous that I didn’t think of it. But I did take it a step further and created a bat file to further automate the process.</p>
+
+<p>The commands in this script are taken directly from the book. The only modification I’ve made is to parameterize the solution name and the project name.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>dotnet new sln -o %1
+cd %1
+mkdir src
+dotnet new console -lang F# -o src/%2
+dotnet sln add src/%2/%2.fsproj
+mkdir tests
+dotnet new xunit -lang F# -o tests/%2Tests
+dotnet sln add tests/%2Tests/%2Tests.fsproj
+cd tests/%2Tests
+dotnet add reference ../../src/%2/%2.fsproj
+dotnet add package FsUnit
+dotnet add package FsUnit.XUnit
+dotnet build
+dotnet test
+</code></pre></div></div>
+
+<p>With this script, you could execute something like this command:</p>
+
+<p><code class="language-plaintext highlighter-rouge">CreateFSharpProject SampleSolution SampleProject</code></p>
+
+<p>This would create a new Solution named SampleSolution. It would contain two projects F#, SampleProject and SampleProjectTests. The test project already has a reference to the primary project and is ready to execute the tests with FsUnit.</p>
+
+<p>I created a similar script file for C# and MSTest.</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>dotnet new sln -o %1
+cd %1
+mkdir src
+dotnet new console -lang C# -o src/%2
+dotnet sln add src/%2/%2.csproj
+mkdir tests
+dotnet new mstest -lang C# -o tests/%2Tests
+dotnet sln add tests/%2Tests/%2Tests.csproj
+cd tests/%2Tests
+dotnet add reference ../../src/%2/%2.csproj
+dotnet build
+dotnet test
+</code></pre></div></div>
+<p>With these scripts, you can quickly create solutions with the unit test project already configured. That way, you can jump right into the code experiment you want to run.</p>
+
+<p>You can take this concept and modify it to create whatever kind of project and unit test project you want. Hopefully, it is a simple little time saver for you.</p>]]></content><author><name>Harry Singh</name></author><summary type="html"><![CDATA[From time to time, I need to create a small C# or F# solution to experiment with a code feature or a library function. Often, what I want to do is create a simple console application and a unit test project that references the console application. This isn’t hard to do in Visual Studio, but it feels like it takes too many steps.]]></summary></entry></feed>
