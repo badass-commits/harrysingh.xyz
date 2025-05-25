@@ -1,0 +1,9 @@
+<div class="project-cards">
+{% for project in site.projects %}
+  {% assign repositoryList = site.github.public_repositories | where: "name", project %}
+  {% if repositoryList.size > 0 %}
+    {% assign repository = repositoryList.first %}
+    {% include project-card.html %}
+  {% endif %}
+{% endfor %}
+</div>
